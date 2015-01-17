@@ -94,11 +94,6 @@ public enum ExperimentExecutionController implements Experiment.ExperimentListen
         System.out.println("attempting to close experiment");
         runningExperiment.stop();
 
-//        runningExperiment.removeListener(this);
-        //System.out.println("attempting to close statistic collector thread");
-        //DatabaseUnit.UNIT.stopCollectorThread();
-        //System.out.println("attempting to diconnect from database");
-        //DatabaseUnit.UNIT.disconnect();
     }
 
     public Experiment getRunningExperiment() {
@@ -111,10 +106,6 @@ public enum ExperimentExecutionController implements Experiment.ExperimentListen
 
     public void removeExperimentListener(ExperimentListener l) {
         experimentListeners.remove(l);
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        UNIT.run(new File("exp.xml"), true, false);
     }
 
     public AlgorithmMetadata getRunningAlgorithm() {

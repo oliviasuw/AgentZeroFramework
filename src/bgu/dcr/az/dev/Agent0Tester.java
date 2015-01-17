@@ -43,6 +43,7 @@ public class Agent0Tester  {
     public static void main(String[] args) {
         Agent0Tester tester = new Agent0Tester();
         CmdLineParser parser = new CmdLineParser(tester);
+        System.out.println("args" + args);
         try {
             parser.parseArgument(args);
             tester.go();
