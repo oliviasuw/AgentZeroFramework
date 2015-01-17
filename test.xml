@@ -1,0 +1,9 @@
+<experiment>   
+    <async-test name="SBB test1" run-var="p2" repeat-count="10" start="0.4" end="0.7" tick-size="0.1">
+        <dcop-connected n="6" d="4" p1="0.5"/>
+        <algorithm name="SBB"/>
+        <msgc-sc/>
+        <nccc-sc/>
+        <default-tester/>
+    </async-test> 
+</experiment>
