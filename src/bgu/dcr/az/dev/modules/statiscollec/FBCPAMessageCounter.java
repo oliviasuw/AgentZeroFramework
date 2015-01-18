@@ -27,6 +27,8 @@ public class FBCPAMessageCounter extends AbstractStatisticCollector<FBCPAMessage
 	long[] counts;
     @Variable(name = "type", description = "type of the graph to show (BY_AGENT/BY_TESTFILE)", defaultValue = "BY_TESTFILE")
     Type graphType = Type.BY_TESTFILE;
+    @Variable(name = "agentType", description = "type of an agent whether contains multiple variables.", defaultValue = "single")
+    AgentType agentType = AgentType.single;
     Test test;
 
     @Override
@@ -93,20 +95,26 @@ public class FBCPAMessageCounter extends AbstractStatisticCollector<FBCPAMessage
     	int fileNo = (int) test.getCurrentVarValue();
     	File dir = new File("problems");
     	File[] files = dir.listFiles();
-    	final VarAgentMap varAgentMap = new VarAgentMap(files[fileNo-1]);
     	final String testFile = files[fileNo-1].getName();
-    	//System.out.println("test file name: " + testFile);
-        new Hooks.BeforeMessageSentHook() {
-
-            @Override
-            public void hook(int sender, int recepiennt, Message msg) {
-            	if(!varAgentMap.get(sender).equals(varAgentMap.get(recepiennt)) && msg.getName().equals("FB_CPA"))
-            		{
-            		counts[sender]++;
-            		//System.out.println("sender: " + sender + ", recepient: " + recepiennt + ", msg: " + msg);
-            		}
-            }
-        }.hookInto(ex);
+        switch(agentType){
+            case single:
+                final VarAgentMap varAgentMap = new VarAgentMap(files[fileNo-1]);
+                new Hooks.BeforeMessageSentHook() {
+                    @Override
+                    public void hook(int sender, int recepiennt, Message msg) {
+                        if(!varAgentMap.get(sender).equals(varAgentMap.get(recepiennt)) && msg.getName().equals("FB_CPA"))
+                            counts[sender]++;
+                    }
+                }.hookInto(ex);
+            case multiple:
+                new Hooks.BeforeMessageSentHook() {
+                    @Override
+                    public void hook(int sender, int recepiennt, Message msg) {
+                        if(msg.getName().equals("FB_CPA"))
+                            counts[sender]++;
+                    }
+                }.hookInto(ex);
+        }
         
         new Hooks.TerminationHook() {
 
@@ -121,11 +129,9 @@ public class FBCPAMessageCounter extends AbstractStatisticCollector<FBCPAMessage
 
     @Override
     public String getName() {
-        //YOU CAN CHANGE THE RETURNED VALUE SO THAT YOUR STATISTIC COLLECTOR NAME IN THE UI WILL BE MORE PLESENT
     	return "FB_CPA Messages Count";
     }
 
-    //THIS IS YOUR RECORD IN THE DATABASE DEFINITION
     public static class FBCPAMsgRecord extends DBRecord {
     	
     	int agent;
@@ -148,5 +154,10 @@ public class FBCPAMessageCounter extends AbstractStatisticCollector<FBCPAMessage
 
         BY_AGENT,
         BY_TESTFILE,
+    }
+
+    public static enum AgentType {
+        single,
+        multiple,
     }
 }

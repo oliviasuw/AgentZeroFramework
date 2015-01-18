@@ -11,104 +11,101 @@ import java.io.*;
 @Algorithm(name="AFBB1Constrained", useIdleDetector=false)
 public class AFBB1ConstrainedAgent extends SimpleAgent {
 
-	private int bound;
-	private Assignment cpa, bestCpa;
-	private int[] estimates;
-	private int[] h;
-	private TimeStamp timeStamp;
-	private boolean isLogged = false;
-	
+    private int bound;
+    private Assignment cpa, bestCpa;
+    private int[] estimates;
+    private int[] h;
+    private TimeStamp timeStamp;
+    private boolean isLogged = false;
+
     @Override
     public void start() {
-    	timeStamp = new TimeStamp(this);
-    	bound = Integer.MAX_VALUE;
-    	estimates = new int[this.getProblem().getNumberOfVariables()];
-    	h = new int[this.getProblem().getDomainSize(this.getId())];
-    	fillH();
+        timeStamp = new TimeStamp(this);
+        bound = Integer.MAX_VALUE;
+        estimates = new int[this.getProblem().getNumberOfVariables()];
+        h = new int[this.getProblem().getDomainSize(this.getId())];
+        fillH();
         if (isFirstAgent()) {
-        	cpa = new Assignment();    //generate CPA
-        	assignCPA();
+            cpa = new Assignment();    //generate CPA
+            assignCPA();
         }
     }
-    
+
     private void assignCPA(){
-    	clearEstimations();
-    	int v = -1;
-    	int lastAssignedValue = (cpa.isAssigned(this.getId()) ? cpa.getAssignment(this.getId()) : -1);
-    	cpa.unassign(this.getId());
-    	int tempCost = bound;
-    	for (int i = lastAssignedValue + 1; i < this.getDomainSize(); i++) {
-    		int temp = costOf(cpa) + calcFv(i, cpa);
-    		if (temp < tempCost) {
+        clearEstimations();
+        int v = -1;
+        int lastAssignedValue = (cpa.isAssigned(this.getId()) ? cpa.getAssignment(this.getId()) : -1);
+        cpa.unassign(this.getId());
+        for (int i = lastAssignedValue + 1; i < this.getDomainSize(); i++) {
+            if (costOf(cpa) + calcFv(i, cpa) < bound) {
                 v = i;
-                tempCost = temp;
                 break;
-    		}
-    	}
-    	if (v == -1) {
+            }
+        }
+        if (v == -1) {
             backtrack();
-    	} else {
+        } else {
             cpa.assign(this.getId(), v);
             timeStamp.incLocalTime();
-            if (cpa.isFull(getProblem())) { 
+            if (cpa.isFull(getProblem())) {
                 broadcast("NEW_SOLUTION", timeStamp, cpa);
                 bound = (int) costOf(cpa);
                 assignCPA();
             } else {
                 send("CPA_MSG", timeStamp, cpa).toNextAgent();
                 //send("FB_CPA", timeStamp, this.getId(), cpa).toAllAgentsAfterMe();
-            		//send("FB_CPA", this.getId(), cpa).toAllAgentsAfterMe();
-                	for(int agent : getProblem().getNeighbors(getId())){
-                		if(getId() < agent)
-                			send("FB_CPA", timeStamp, this.getId(), cpa).to(agent);
-                	}
-            	}
+                //send("FB_CPA", this.getId(), cpa).toAllAgentsAfterMe();
+                for(int agent : getProblem().getNeighbors(getId())){
+                    if(getId() < agent)
+                        send("FB_CPA", timeStamp, this.getId(), cpa).to(agent);
+                }
             }
-    	}
-    
-    
+        }
+    }
+
+
     private void backtrack() {
         clearEstimations();
         if (this.isFirstAgent()) {
             if(!isLogged){
-            	writeToFile();
-            	isLogged = true;
+                writeToFile();
+                isLogged = true;
             }
-             finish(bestCpa);
+            finish(bestCpa);
         } else {
-             cpa.unassign(this.getId());
-             send("CPA_MSG", timeStamp, cpa).toPreviousAgent();
+            cpa.unassign(this.getId());
+            send("CPA_MSG", timeStamp, cpa).toPreviousAgent();
         }
 
     }
-    
+
     private void writeToFile(){
-    	File costFile = new File("costs.txt");
-    	try {
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(costFile, true)));
-			writer.write(costOf(bestCpa) + "\n");
-			writer.flush();
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        File costFile = new File("costs.txt");
+        try {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(costFile, true)));
+            writer.write(costOf(bestCpa) + "\n");
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-    
+
     private void clearEstimations() {
         this.estimates = new int[this.getProblem().getNumberOfVariables()];
     }
-    
+
     private int calcFv(int v, Assignment pa) {
         int ans = (int) (pa.calcAddedCost(this.getId(), v, this.getProblem()) + h[v]);
         return ans;
     }
-    
+
     private void fillH() {
         for (int v = 0; v < this.getProblem().getDomainSize(this.getId()); v++) {
             h[v] = calculateHv(v);
         }
     }
-    
+
     private int calculateHv(int v) {
         int ans = 0;
         int cost = 0;
@@ -119,7 +116,7 @@ public class AFBB1ConstrainedAgent extends SimpleAgent {
             for (int u = 0; u < this.getProblem().getDomainSize(aj); u++) {
                 cost = (int) this.getConstraintCost(this.getId(), v, aj, u);
                 if (tmp > cost) {
-                        tmp = cost;
+                    tmp = cost;
                 }
             }
             ans += tmp;
@@ -140,7 +137,7 @@ public class AFBB1ConstrainedAgent extends SimpleAgent {
         ans = tmp;
         return ans;
     }
-    
+
     private double estimatesSum() {
         int ans = 0;
         for (int i = 0; i < estimates.length; i++) {
@@ -148,28 +145,27 @@ public class AFBB1ConstrainedAgent extends SimpleAgent {
         }
         return ans;
     }
-    
+
     @WhenReceived("FB_CPA")
-    public void handleFBCPA(TimeStamp hisMyTimeStamp, int aj, Assignment pa) {
-    	if (hisMyTimeStamp.compare(timeStamp, this) >= 0) {
-            timeStamp.copyFrom(hisMyTimeStamp);
-       } else {
-            return ;
-       }
-    	int f = calcMinf(pa);
+    public void handleFBCPA(TimeStamp hisTimeStamp, int aj, Assignment pa) {
+        if (hisTimeStamp.compare(timeStamp, this) >= 0) {
+            timeStamp.copyFrom(hisTimeStamp);
+        } else {
+            return;
+        }
+        int f = calcMinf(pa);
         send("FB_ESTIMATE", timeStamp, f, pa, this.getId()).to(aj);
         //System.out.println("This is a FB_CPA message.");
     }
-    
+
     @WhenReceived("CPA_MSG")
-    public void handleCPAMSG(TimeStamp hisMyTimeStamp, Assignment pa) {
-    	//System.out.println("This is a CPA_MSG message.");
-    	if (hisMyTimeStamp.compare(timeStamp, this) >= 0) {
-            timeStamp.copyFrom(hisMyTimeStamp);
-       } else {
-            return ;
-       }
-    	this.cpa = pa;
+    public void handleCPAMSG(TimeStamp hisTimeStamp, Assignment pa) {
+        if (hisTimeStamp.compare(timeStamp, this) >= 0) {
+            timeStamp.copyFrom(hisTimeStamp);
+        } else {
+            return;
+        }
+        this.cpa = pa;
         Assignment tempCpa = pa.deepCopy();
         tempCpa.unassign(this.getId());
         if (costOf(tempCpa) >= bound) {
@@ -178,32 +174,33 @@ public class AFBB1ConstrainedAgent extends SimpleAgent {
             assignCPA();
         }
     }
-    
+
     @WhenReceived("FB_ESTIMATE")
-    public void handleFBESTIMATE(TimeStamp hisMyTimeStamp, int estimate, Assignment pa, int aj) {
-    	//System.out.println("This is a FB_ESTIMATE message.");
-    	if (hisMyTimeStamp.compare(timeStamp, this) >= 0) {
-            timeStamp.copyFrom(hisMyTimeStamp);
-       } else {
-            return ;
-       }
-    	if(!cpa.equals(pa))
-    		return;
+    public void handleFBESTIMATE(TimeStamp hisTimeStamp, int estimate, Assignment pa, int aj) {
+        // Timestamp fixed
+        // if (hisTimeStamp.compare(timeStamp, this) >= 0) {
+        if (hisTimeStamp.compare2(timeStamp, this) >= 0) {
+            timeStamp.copyFrom(hisTimeStamp);
+        } else {
+            return;
+        }
+        if(!cpa.equals(pa))
+            return;
         estimates[aj] = estimate;
         if (costOf(cpa) + estimatesSum() >= bound) {
             assignCPA();
-        } 
+        }
     }
-    
+
     @WhenReceived("NEW_SOLUTION")
-    public void handleNEWSOLUTION(TimeStamp hisMyTimeStamp, Assignment pa) {
-    	//System.out.println("This is a NEW_SOLUTION message.");
-    	if (hisMyTimeStamp.compare(timeStamp, this) >= 0) {
-            timeStamp.copyFrom(hisMyTimeStamp);
-       } else {
-            return ;
-       }
-    	bestCpa = pa;
+    public void handleNEWSOLUTION(TimeStamp hisTimeStamp, Assignment pa) {
+        if (hisTimeStamp.compare(timeStamp, this) >= 0) {
+            timeStamp.copyFrom(hisTimeStamp);
+        } else {
+            return;
+        }
+        //System.out.println("This is a NEW_SOLUTION message.");
+        bestCpa = pa;
         bound = (int) costOf(pa);
     }
 }
