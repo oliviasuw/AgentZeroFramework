@@ -24,11 +24,6 @@ public enum ProblemType {
         public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize) {
             return new KAryTreeConstraintPackage(numvars);
         }
-
-        @Override
-        public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize, boolean multiVar) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
     },
     /**
      * Constraint Optimization Problem, K-Ary Constraints allowed
@@ -37,11 +32,6 @@ public enum ProblemType {
         @Override
         public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize) {
             return new KAryTreeConstraintPackage(numvars);
-        }
-
-        @Override
-        public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize, boolean multiVar) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     },
     /**
@@ -52,22 +42,12 @@ public enum ProblemType {
         public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize) {
             return new KAryTreeConstraintPackage(numvars);
         }
-
-        @Override
-        public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize, boolean multiVar) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
     },
     /**
      * Constraint Satisfaction Problem, Only Binary and unary constraints
      * allowed
      */
     DCSP {
-        @Override
-        public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize, boolean multiVar) {
-            return new BinaryMapConstraintPackage(numvars, maxDomainSize, multiVar);
-        }
-
         @Override
         public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize) {
             return new BinaryMapConstraintPackage(numvars, maxDomainSize);
@@ -78,11 +58,6 @@ public enum ProblemType {
      * allowed
      */
     DCOP {
-        @Override
-        public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize, boolean multiVar) {
-            return new BinaryMapConstraintPackage(numvars, maxDomainSize, multiVar);
-        }
-
         @Override
         public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize) {
             return new BinaryMapConstraintPackage(numvars, maxDomainSize);
@@ -97,15 +72,9 @@ public enum ProblemType {
         public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize) {
             return new AsymmetricBinaryMapConstraintPackage(numvars, maxDomainSize);
         }
-
-        @Override
-        public ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize, boolean multiVar) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
     };
 
     public abstract ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize);
-    public abstract ConstraintsPackage newConstraintPackage(int numvars, int maxDomainSize, boolean multiVar);
     boolean asymmetric = false;
     boolean binary = true;
 
@@ -124,5 +93,4 @@ public enum ProblemType {
     public boolean isBinary() {
         return binary;
     }
-
 }

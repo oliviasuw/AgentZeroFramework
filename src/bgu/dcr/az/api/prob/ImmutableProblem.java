@@ -6,6 +6,7 @@ package bgu.dcr.az.api.prob;
 
 import bgu.dcr.az.api.ds.ImmutableSet;
 import bgu.dcr.az.api.tools.Assignment;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,8 +87,9 @@ public interface ImmutableProblem {
     int getNumberOfAgents();
     
     List<Integer> getVariables(int agentId);
-    
-    public ArrayList<Integer> getConstrainedVars(int src, int dest);
+ 
+    // Deleted by Olivia
+//    public ArrayList<Integer> getConstrainedVars(int src, int dest);
 
 
     /**
@@ -117,5 +119,12 @@ public interface ImmutableProblem {
      * @return
      */
     int calculateCost(Assignment a);
+
+	/**
+	 * @param src
+	 * @param dest
+	 * @return
+	 */
+	ArrayList<Integer> getConstrainedVars(int src, int dest);
 
 }

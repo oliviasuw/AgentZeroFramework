@@ -6,6 +6,7 @@ package bgu.dcr.az.api.exen;
 
 import bgu.dcr.az.api.DeepCopyable;
 import bgu.dcr.az.api.tools.Assignment;
+import bgu.dcr.az.dev.modules.statiscollec.Counter;
 
 /**
  * TODO: hide all the to* so that correctness testers will not have the power to affect the result directly
@@ -22,6 +23,9 @@ public class ExecutionResult implements DeepCopyable {
     private double currentWeight = 1;
 
     public ExecutionResult(Execution resultingExecution) {
+    	// Olivia added
+    	Counter.clearStatistics();
+    	
         this.resultingExecution = resultingExecution;
     }
 
@@ -145,6 +149,8 @@ public class ExecutionResult implements DeepCopyable {
 
             @Override
             public String toString(ExecutionResult er) {
+            	// Olivia Debug
+            	Counter.reportStatistics();
                 if(er.getCost()!=-1)
                 {
                     if(er.finalAssignment == null)

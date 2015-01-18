@@ -56,7 +56,7 @@ public class DefaultMessageQueue implements MessageQueue {
 
     @Override
     public void onAgentFinish() {
-        
+        //dont care...
     }
     
     @Override

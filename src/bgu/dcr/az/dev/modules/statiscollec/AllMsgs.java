@@ -11,6 +11,7 @@ import bgu.dcr.az.api.exen.stat.DBRecord;
 import bgu.dcr.az.api.exen.stat.Database;
 import bgu.dcr.az.api.exen.stat.VisualModel;
 import bgu.dcr.az.api.exen.stat.vmod.BarVisualModel;
+import bgu.dcr.az.dev.modules.statiscollec.DELMessageCounter.AgentType;
 import bgu.dcr.az.exen.stat.AbstractStatisticCollector;
 import bgu.dcr.az.exen.stat.db.DatabaseUnit;
 
@@ -26,6 +27,8 @@ public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
     long[] counts;
     @Variable(name = "type", description = "type of the graph to show (BY_AGENT/BY_TESTFILE)", defaultValue = "BY_TESTFILE")
     Type graphType = Type.BY_TESTFILE;
+    @Variable(name = "agentType", description = "type of an agent whether contains multiple variables.", defaultValue = "single")
+    AgentType agentType = AgentType.single;
     Test test;
 
     @Override
@@ -92,16 +95,32 @@ public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
     	File dir = new File("problems");
     	File[] files = dir.listFiles();
     	final String testFile = files[fileNo-1].getName();
-
-        new Hooks.BeforeMessageSentHook() {
-            @Override
-            public void hook(int sender, int recepiennt, Message msg) {
-            		counts[sender]++;
-            }
-        }.hookInto(ex);
-        
+        switch(agentType){
+        case single:
+            new Hooks.BeforeMessageSentHook() {
+                @Override
+                public void hook(int sender, int recepiennt, Message msg) {
+                		counts[sender]++;
+                }
+            }.hookInto(ex);
+            break;
+            
+        case VA:
+            new Hooks.BeforeMessageSentHook() {
+                @Override
+                public void hook(int sender, int recepiennt, Message msg) {
+                	int senderAgent = agents[sender].getRealAgent();
+                	int recepienntAgent = agents[recepiennt].getRealAgent();
+                	if(senderAgent != recepienntAgent){
+                		counts[sender]++;
+                	}
+                		
+                }
+            }.hookInto(ex);
+            break;
+           
+    }
         new Hooks.TerminationHook() {
-
             @Override
             public void hook() {
                 for (int i = 0; i < counts.length; i++) {
@@ -137,5 +156,10 @@ public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
     public static enum Type {
         BY_AGENT,
         BY_TESTFILE
+    }
+    
+    public static enum AgentType {
+        single,
+        VA,
     }
 }

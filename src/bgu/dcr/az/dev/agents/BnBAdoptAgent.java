@@ -5,6 +5,7 @@ import bgu.dcr.az.api.agt.SimpleAgent;
 import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
 import bgu.dcr.az.api.tools.DFSPsaudoTree;
+import bgu.dcr.az.dev.modules.statiscollec.Counter;
 import bgu.dcr.az.dev.tools.AssignmentInfo;
 
 import java.io.File;
@@ -20,6 +21,8 @@ import java.util.Set;
  */
 @Algorithm(name="BnBAdopt", useIdleDetector=true)
 public class BnBAdoptAgent extends SimpleAgent {
+	
+	boolean debug = false;
 
     HashMap<Integer, AssignmentInfo> cpa = new HashMap<>();
     private int ID;
@@ -151,7 +154,7 @@ public class BnBAdoptAgent extends SimpleAgent {
         }
         LB = findMinimum(LBD, 1, 0);
         UB = findMinimum(UBD, 1, 0);
-        System.out.println("I am " + getId() + ", LB=" + LB + ", UB=" + UB);
+//        System.out.println("I am " + getId() + ", LB=" + LB + ", UB=" + UB);
 
         if(LBD[d] >= min(TH, UB)){
             d = findMinimum(LBD, 2, d);
@@ -160,6 +163,8 @@ public class BnBAdoptAgent extends SimpleAgent {
         if((tree.isRoot() && UB == LB)){
             for(int child : tree.getChildren()){
                 send("TERMINATE").to(child);
+                Counter.msgCounter ++;
+                Counter.TERMINATEMsgCounter ++;
             }
             
             File file = new File("costs.txt");
@@ -174,12 +179,46 @@ public class BnBAdoptAgent extends SimpleAgent {
             finishWithCost(UB);
             return;
         }
-        for(int child : tree.getChildren())
-            send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d) + lbChildD[tree.getChildren().indexOf(child)][d]).to(child);
-        for(int pseudoChild : tree.getPsaudoChildren())
-            send("VALUE", getId(), d, ID, Integer.MAX_VALUE).to(pseudoChild);
-        if(!tree.isRoot())
-            send("COST", getId(), cpa, LB, UB).to(tree.getParent());
+        for(int child : tree.getChildren()){
+            send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
+            		+ lbChildD[tree.getChildren().indexOf(child)][d]).to(child);
+            Counter.msgCounter ++;
+            Counter.VALUEMsgCounter ++;
+            //Debug
+            if(debug){
+            	System.out.println("VALUE: " + getId() +
+            			" [" + d + "] to " + child);
+            }
+        }
+
+        
+        for(int pseudoChild : tree.getPsaudoChildren()){
+        	send("VALUE", getId(), d, ID, Integer.MAX_VALUE).to(pseudoChild);            
+            Counter.msgCounter ++;
+            Counter.VALUEMsgCounter ++;
+            //Debug
+            if(debug){
+            	System.out.println("VALUE: " + getId() +
+            			" [" + d + "] to " + pseudoChild);
+            }
+
+        	
+        }
+            
+
+        
+        if(!tree.isRoot()){
+        	send("COST", getId(), cpa, LB, UB).to(tree.getParent());        
+            Counter.msgCounter ++;
+            Counter.COSTMsgCounter ++;
+            //Debug
+            if(debug){
+            	System.out.println("COST: " + getId() +
+            			" [" + d + "] to " + tree.getParent());
+            }
+        }
+            
+
     }
 
     private int findMinimum(int[] array, int flag, int initValue){     //flag = 1, return minumum,  else, return minimum index
@@ -284,6 +323,9 @@ public class BnBAdoptAgent extends SimpleAgent {
     public void handleTERMINATE(){
         for(int child : tree.getChildren()){
             send("TERMINATE").to(child);
+            
+            Counter.msgCounter ++;
+            Counter.TERMINATEMsgCounter ++;
         }
         finish();
     }

@@ -18,8 +18,11 @@ import bgu.dcr.az.api.tools.Assignment;
 import bgu.dcr.az.api.tools.IdleDetector;
 import bgu.dcr.az.api.exen.escan.AlgorithmMetadata;
 import bgu.dcr.az.exen.async.AsyncExecution;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -174,6 +177,13 @@ public abstract class AbstractExecution extends AbstractProcess implements Execu
                 apops.setExecution(this);
                 apops.setId(i);
 
+                /**
+                 * Olivia added 
+                 */
+                List<Integer> myVarIds = new ArrayList();
+                myVarIds = getGlobalProblem().getVariables(i);
+                apops.setMyVarsId(myVarIds);
+                apops.setMyRealAgent(getGlobalProblem().getMyRealAgentId(i));
             }
             return true;
         } catch (InstantiationException ex) {

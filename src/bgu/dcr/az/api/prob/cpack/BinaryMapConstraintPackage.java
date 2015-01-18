@@ -20,19 +20,10 @@ public class BinaryMapConstraintPackage extends AbstractConstraintPackage {
     private Object[] map;
     private int biggestDomainSize = 0;
     private final int numvars;
-    private final boolean multivar;                     //added
 
-    public BinaryMapConstraintPackage(int numvar, int maxDomainSize, boolean multiVar) {
-        super(numvar);
-        this.multivar = multiVar;                        //added
-        this.numvars = numvar;
-        this.biggestDomainSize = maxDomainSize;
-        this.map = new Object[numvars * numvars];
-    }
-    
     public BinaryMapConstraintPackage(int numvar, int maxDomainSize) {
         super(numvar);
-        this.multivar = false;                        //added
+
         this.numvars = numvar;
         this.biggestDomainSize = maxDomainSize;
         this.map = new Object[numvars * numvars];
@@ -74,7 +65,7 @@ public class BinaryMapConstraintPackage extends AbstractConstraintPackage {
         }
 
         int id = calcId(var1, var2);
-        if (var1 != var2 && !multivar) {
+        if (var1 != var2) {
             addNeighbor(var1, var2);
         }
 
@@ -130,9 +121,9 @@ public class BinaryMapConstraintPackage extends AbstractConstraintPackage {
             val2 = t;
         }
 
-        /*if (owner != var1) {
+        if (owner != var1) {
             Agt0DSL.panic("Binary Problem cannot support constraint owners that are not part of the constraints, if you need such a feature use the K-Ary version.");
-        }*/
+        }
 
         int id = calcId(var1, var2);
         if (map[id] == null) {

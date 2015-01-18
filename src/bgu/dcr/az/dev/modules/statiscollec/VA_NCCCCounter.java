@@ -1,3 +1,9 @@
+/**
+ * multiVarPerAgentNCCCCounter.java
+   Created by Su Wen
+   Date: Jan 11, 2015
+   Time: 8:27:10 PM 
+ */
 package bgu.dcr.az.dev.modules.statiscollec;
 
 import bgu.dcr.az.api.Agent;
@@ -18,15 +24,17 @@ import bgu.dcr.az.exen.stat.db.DatabaseUnit;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Register(name = "myNCCC")
-public class MyNCCC extends AbstractStatisticCollector<MyNCCC.MyNCCCRecord> {
+@Register(name = "NCCC_VA")
+public class VA_NCCCCounter extends AbstractStatisticCollector<VA_NCCCCounter.MyNCCCRecord> {
 
     @Variable(name = "agentType", description = "type of an agent whether contains multiple variables.", defaultValue = "single")
     AgentType agentType = AgentType.single;
-	private long[] nccc;
+	private long[] varNccc;  // NCCC of each virtual agent
+	private long[] realAgentNCCC;  // NCCC of each agent
     private long[] lastKnownCC;
     private Agent[] agents;
 
@@ -49,9 +57,9 @@ public class MyNCCC extends AbstractStatisticCollector<MyNCCC.MyNCCCRecord> {
     @Override
     public VisualModel analyze(Database db, Test r) {
     	String query = "select SUM(value) as sum, testFile, "
-    			+ "ALGORITHM_INSTANCE from myNCCCs where TEST = '" + r.getName() 
+    			+ "ALGORITHM_INSTANCE from NCCC_VA where TEST = '" + r.getName() 
     			+ "' group by ALGORITHM_INSTANCE, testFile order by testFile";
-        LineVisualModel line = new LineVisualModel(r.getRunningVarName(), "Sum(myNCCCs)", "myNCCCs");
+        LineVisualModel line = new LineVisualModel(r.getRunningVarName(), "sum(NCCC_VA)", "NCCC_VA");
         int index = 1;
         try {
             ResultSet rs = db.query(query);
@@ -72,61 +80,40 @@ public class MyNCCC extends AbstractStatisticCollector<MyNCCC.MyNCCCRecord> {
     	File dir = new File("problems");
     	File[] files = dir.listFiles();
     	final String testFile = files[fileNo-1].getName();
-    	this.agents = agents;
-    	nccc = new long[agents.length];
-        lastKnownCC = new long[agents.length];
+    	this.agents = agents;  //virtual agents
+
         switch (agentType){
             case single:
-//                final VarAgentMap varAgentMap = new VarAgentMap(files[fileNo-1]);
-//                multiVarNccc = new long[varAgentMap.getAgentsNo()];
-//                lastKnownCC = new long[varAgentMap.size()];
+            	realAgentNCCC = new long[countNumOfRealAgents(agents)];  // number of real agents
+                lastKnownCC = new long[agents.length];
                 new Hooks.BeforeMessageProcessingHook() {
                     @Override
                     public void hook(Agent a, Message msg) {
+                    	int realOwerAgent = a.getRealAgent();
                         if (msg.getMetadata().containsKey("nccc")) {
                             long newNccc = (Long) msg.getMetadata().get("nccc");
-                            updateCurrentNccc(a.getId());
-                            nccc[a.getId()] = max(newNccc, nccc[a.getId()]);                   
+                            updateCurrentNccc(realOwerAgent, a.getId());
+                            realAgentNCCC[realOwerAgent] = max(newNccc, realAgentNCCC[realOwerAgent]);
                         }
                     }
                 }.hookInto(ex);
                 new Hooks.BeforeMessageSentHook() {
                     @Override
                     public void hook(int sender, int recepiennt, Message msg) {
+                    	int senderAgent = agents[sender].getRealAgent();
                         if (sender >= 0) { //not system or something..
-                            updateCurrentNccc(sender);
-                            msg.getMetadata().put("nccc", nccc[sender]);
+                            updateCurrentNccc(senderAgent, sender);
+                            msg.getMetadata().put("nccc", realAgentNCCC[senderAgent]);
                         }
                     }
                 }.hookInto(ex);
-            case multiple:
-//                nccc = new long[agents.length];
-//                lastKnownCC = new long[agents.length];
-//                new Hooks.BeforeMessageProcessingHook() {
-//                    @Override
-//                    public void hook(Agent a, Message msg) {
-//                        if (msg.getMetadata().containsKey("myNccc")) { //can be system message or something...
-//                            long newNccc = (Long) msg.getMetadata().get("myNccc");
-//                            updateCurrentNccc(a.getId());
-//                            nccc[a.getId()] = max(newNccc, nccc[a.getId()]);
-//                        }
-//                    }
-//                }.hookInto(ex);
-//                new Hooks.BeforeMessageSentHook() {
-//                    @Override
-//                    public void hook(int sender, int recepiennt, Message msg) {
-//                        if (sender >= 0) { //not system or something..
-//                            updateCurrentNccc(sender);
-//                            msg.getMetadata().put("myNccc", nccc[sender]);
-//                        }
-//                    }
-//                }.hookInto(ex);
+                break;
         }
 
         new Hooks.TerminationHook() {
             @Override
             public void hook() {
-                submit(new MyNCCCRecord(testFile, max(nccc)));
+                submit(new MyNCCCRecord(testFile, max(realAgentNCCC)));
             }
         }.hookInto(ex);
     }
@@ -136,24 +123,17 @@ public class MyNCCC extends AbstractStatisticCollector<MyNCCC.MyNCCCRecord> {
 //        lastKnownCC[agentId] = agents[agentId].getNumberOfConstraintChecks();
 //        multiVarNccc[agentId] = multiVarNccc[agentId] + lastKnownCC[agentId] - last;
 //    }
-//
-//    private void updateCurrentNccc(int agentId, int varId) {
-//        long last = lastKnownCC[varId];
-//        lastKnownCC[varId] = agents[varId].getNumberOfConstraintChecks();
-//        multiVarNccc[agentId] = multiVarNccc[agentId] + lastKnownCC[varId] - last;
-//    }
-    
-    
-    private void updateCurrentNccc(int aid) {
-        long last = lastKnownCC[aid];
-        lastKnownCC[aid] = agents[aid].getNumberOfConstraintChecks();
-        nccc[aid] = nccc[aid] + lastKnownCC[aid] - last;
+
+    private void updateCurrentNccc(int realAgentId, int runningAgentID) {
+        long last = lastKnownCC[runningAgentID];
+        lastKnownCC[runningAgentID] = agents[runningAgentID].getNumberOfConstraintChecks();
+        realAgentNCCC[realAgentId] = realAgentNCCC[realAgentId] + 
+        		lastKnownCC[runningAgentID] - last;
     }
-    
     
     @Override
     public String getName() {
-    	return "NCCC Counter";
+    	return "NCCC of VA approach";
     }
 
     public static class MyNCCCRecord extends DBRecord {
@@ -168,10 +148,17 @@ public class MyNCCC extends AbstractStatisticCollector<MyNCCC.MyNCCCRecord> {
 
         @Override
         public String provideTableName() {
-            return "myNCCCs";
+            return "NCCC_VA";
         }
     }
 
+    protected int countNumOfRealAgents(Agent [] agents){
+    	HashMap<Integer, Integer> realAgentIDs = new HashMap();
+    	for(Agent a : agents){
+    		realAgentIDs.put(a.getRealAgent(), 1);
+    	}
+    	return realAgentIDs.size();
+    }
     public static enum AgentType {
         single,
         multiple,

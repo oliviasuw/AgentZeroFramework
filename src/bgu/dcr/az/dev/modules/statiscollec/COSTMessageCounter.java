@@ -111,14 +111,21 @@ public class COSTMessageCounter extends AbstractStatisticCollector<COSTMessageCo
                             counts[sender]++;
                     }
                 }.hookInto(ex);
-            case multiple:
-//                new Hooks.BeforeMessageSentHook() {
-//                    @Override
-//                    public void hook(int sender, int recepiennt, Message msg) {
-//                        if(msg.getName().equals("COST"))
-//                            counts[sender]++;
-//                    }
-//                }.hookInto(ex);
+                break;
+            case VA:
+//                final VarAgentMap varAgentMap = new VarAgentMap(files[fileNo-1]);
+                new Hooks.BeforeMessageSentHook() {
+                    @Override
+                    public void hook(int sender, int recepiennt, Message msg) {
+                    	int senderAgent = agents[sender].getRealAgent();
+                    	int recepienntAgent = agents[recepiennt].getRealAgent();
+                    	
+                        if(senderAgent != recepienntAgent
+                        		&& msg.getName().equals("COST"))
+                            counts[sender]++;
+                    }
+                }.hookInto(ex);
+                break;
         }
         
         new Hooks.TerminationHook() {
@@ -163,6 +170,6 @@ public class COSTMessageCounter extends AbstractStatisticCollector<COSTMessageCo
 
     public static enum AgentType {
         single,
-        multiple,
+        VA,
     }
 }

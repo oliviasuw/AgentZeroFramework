@@ -51,9 +51,9 @@ public class MessageCountStatisticCollector extends AbstractStatisticCollector<M
 
                 case BY_RUNVAR:
                     String runVar = r.getRunningVarName();
-                    bv = new BarVisualModel("Message Count", runVar, "Sum(Message Sent)");
+                    bv = new BarVisualModel("Message Count", runVar, "Avg(Message Sent)");
                     res = db.query(""
-                            + "select ALGORITHM_INSTANCE, sum(messages) as m, runvar "
+                            + "select ALGORITHM_INSTANCE, avg(messages) as m, runvar "
                             + "from Message_count "
                             + "where test = '" + r.getName() + "' "
                             + "group by ALGORITHM_INSTANCE, runvar "
