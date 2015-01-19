@@ -102,8 +102,11 @@ public class VALUEMessageCounter extends AbstractStatisticCollector<VALUEMessage
                 new Hooks.BeforeMessageSentHook() {
                     @Override
                     public void hook(int sender, int recepiennt, Message msg) {
-                        if(msg.getName().equals("VALUE"))
-                            counts[sender]++;
+                        if(msg.getName().equals("VALUE")){
+                        	counts[sender]++;
+                        	Counter.VALUEMsgCounter ++;
+                        }
+                            
                     }
                 }.hookInto(ex);
             case multiple:

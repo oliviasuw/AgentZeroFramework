@@ -107,8 +107,11 @@ public class DELMessageCounter extends AbstractStatisticCollector<DELMessageCoun
                 new Hooks.BeforeMessageSentHook() {
                     @Override
                     public void hook(int sender, int recepiennt, Message msg) {
-                        if(msg.getName().equals("DEL"))
-                            counts[sender]++;
+                        if(msg.getName().equals("DEL")){
+                        	counts[sender]++;
+                        	Counter.DELMsgCounter ++;
+                        }
+                           
                     }
                 }.hookInto(ex);
             case multiple:

@@ -5,10 +5,13 @@
 package bgu.dcr.az.api.tools;
 
 import java.util.Set;
+
 import bgu.dcr.az.api.Agent;
 import bgu.dcr.az.api.agt.SimpleAgent;
 import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
+import bgu.dcr.az.dev.modules.statiscollec.Counter;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -193,6 +196,7 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
             if (neighbors.size() > 0) {
 //                //System.out.println("A"+getId()+" SENDING VISIT TO: "+ neighbors.get(0));
                 send("VISIT", depth + 1).to(neighbors.get(0));
+                Counter.treeBuildVisitMsgCounter ++;
             } else {
 //                //System.out.println("A"+getId()+" ENDED WITH NEIGHBORS");
                 noMoreNeighbors();
@@ -206,12 +210,18 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
             if (parent >= 0) { // not root
 //                //System.out.println("A"+getId()+" SENDING SET_CHILD TO: "+parent);
                 ancestors.add(parent);
-                for(int descendant : descendants)
-                    send("ADD_ANCESTORS", parent).to(descendant);
+                for(int descendant : descendants){
+                	send("ADD_ANCESTORS", parent).to(descendant);
+                	Counter.treeBuildAddAncestorMsgCounter ++;
+                }
+                    
+                
                 send("SET_CHILD", seperator, descendants).to(parent);
+                Counter.treeBuildSetChildMsgCounter ++;
             }
 //            //System.out.println("A"+getId()+" SENDING DONE TO ALL");
             send("DONE").toAll(range(0, getProblem().getNumberOfVariables() - 1));
+            Counter.treeBuildDone += getProblem().getNumberOfVariables() - 1;
             //send("DONE").to(1-getId());
         }
 
@@ -238,9 +248,11 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
                 System.out.println("A"+getId()+" SENDING SET_PSAUDO_CHILD TO: "+sendingAgent);
                 
                 send("SET_PSAUDO_CHILD", descendants).to(sendingAgent);
+                Counter.treeBuildSetPseudoChildMsgCounter ++;
             } else {
                 //System.out.println("A"+getId()+" SENDING REFUSE_VISIT TO: "+sendingAgent);
                 send("REFUSE_VISIT").to(sendingAgent);
+                Counter.treeBuildVisitRefuse ++;
             }
         }
         

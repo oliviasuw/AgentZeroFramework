@@ -106,8 +106,11 @@ public class TERMINATEMessageCounter extends AbstractStatisticCollector<TERMINAT
                 new Hooks.BeforeMessageSentHook() {
                     @Override
                     public void hook(int sender, int recepiennt, Message msg) {
-                        if(msg.getName().equals("TERMINATE"))
-                            counts[sender]++;
+                        if(msg.getName().equals("TERMINATE")){
+                        	counts[sender]++;
+                        	Counter.TERMINATEMsgCounter ++;
+                        }
+                            
                     }
                 }.hookInto(ex);
             case multiple:

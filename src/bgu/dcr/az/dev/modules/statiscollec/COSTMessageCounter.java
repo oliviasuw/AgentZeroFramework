@@ -107,8 +107,11 @@ public class COSTMessageCounter extends AbstractStatisticCollector<COSTMessageCo
                 new Hooks.BeforeMessageSentHook() {
                     @Override
                     public void hook(int sender, int recepiennt, Message msg) {
-                        if(msg.getName().equals("COST"))
-                            counts[sender]++;
+                        if(msg.getName().equals("COST")){
+                        	counts[sender]++;
+                        	Counter.COSTMsgCounter ++;
+                        }
+                            
                     }
                 }.hookInto(ex);
             case multiple:

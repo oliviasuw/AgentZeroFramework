@@ -6,6 +6,12 @@
  */
 package bgu.dcr.az.dev.modules.statiscollec;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import bgu.dcr.az.api.exen.ExecutionResult.State;
+
 /**
  * @author Su Wen
  *
@@ -48,6 +54,31 @@ public class Counter {
     	int total = totalBuildTree + msgCounter;
     	System.out.println("In total:\t" + total);
 	}
+	public static void writeStatistics(State state) throws IOException{
+        File file = new File("statistics.txt");
+        FileWriter fileWriter = new FileWriter(file, true);
+		if(state == State.SUCCESS) {
+			int totalBuildTreeMsg = treeBuildVisitMsgCounter + treeBuildAddAncestorMsgCounter
+					+ treeBuildSetChildMsgCounter + treeBuildSetPseudoChildMsgCounter
+					+ treeBuildDone + treeBuildVisitRefuse;
+			int totalSearchMsg = Counter.VALUEMsgCounter + Counter.COSTMsgCounter +
+					Counter.DELMsgCounter + Counter.TERMINATEMsgCounter;
+			fileWriter.write(Counter.msgCounter + "\t"
+					+ totalSearchMsg + "\t"
+					+ totalBuildTreeMsg + "\t"
+					+ Counter.VALUEMsgCounter + "\t"
+					+ Counter.COSTMsgCounter + "\t"
+					+ Counter.DELMsgCounter + "\t"
+					+ Counter.TERMINATEMsgCounter + "\t");
+			fileWriter.write("\n");
+		}
+		else{
+			fileWriter.write("Error!\n");
+		}
+		fileWriter.close();
+		
+	}
+	
 	
 	public static void clearStatistics(){
 		msgCounter = 0;

@@ -96,6 +96,7 @@ public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
         new Hooks.BeforeMessageSentHook() {
             @Override
             public void hook(int sender, int recepiennt, Message msg) {
+            	Counter.msgCounter ++;
             		counts[sender]++;
             }
         }.hookInto(ex);
