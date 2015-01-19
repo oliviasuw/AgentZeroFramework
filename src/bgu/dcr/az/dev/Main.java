@@ -7,9 +7,6 @@ import java.io.File;
  */
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-        File file = new File("costs.txt");
-        if(file.exists())
-            file.delete();
         ExperimentExecutionController.UNIT.run(new File("test.xml"), true, false);
     }
 }

@@ -11,7 +11,7 @@
  		<default-message-delayer type="NCCC" maximum-delay="10" minimum-delay="0"/>
         <default-tester/>
     </async-test-->  
-    <async-test name="bnbadoptPlus" run-var="fileNo" repeat-count="1" start="1" end="2" tick-size="1">!
+    <async-test name="bnbadoptPlus" run-var="fileNo" repeat-count="1" start="1" end="1" tick-size="1">!
         <singleVarPerAgentProbGen/>
         <algorithm name="BnBAdoptPlus"/>
         <allMsgs/>
