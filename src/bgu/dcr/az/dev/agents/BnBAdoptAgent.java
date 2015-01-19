@@ -154,6 +154,7 @@ public class BnBAdoptAgent extends SimpleAgent {
         }
         LB = findMinimum(LBD, 1, 0);
         UB = findMinimum(UBD, 1, 0);
+        
 //        System.out.println("I am " + getId() + ", LB=" + LB + ", UB=" + UB);
 
         if(LBD[d] >= min(TH, UB)){
@@ -163,8 +164,6 @@ public class BnBAdoptAgent extends SimpleAgent {
         if((tree.isRoot() && UB == LB)){
             for(int child : tree.getChildren()){
                 send("TERMINATE").to(child);
-                Counter.msgCounter ++;
-                Counter.TERMINATEMsgCounter ++;
             }
             
             File file = new File("costs.txt");
@@ -179,11 +178,10 @@ public class BnBAdoptAgent extends SimpleAgent {
             finishWithCost(UB);
             return;
         }
+
         for(int child : tree.getChildren()){
             send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
             		+ lbChildD[tree.getChildren().indexOf(child)][d]).to(child);
-            Counter.msgCounter ++;
-            Counter.VALUEMsgCounter ++;
             //Debug
             if(debug){
             	System.out.println("VALUE: " + getId() +
@@ -194,8 +192,6 @@ public class BnBAdoptAgent extends SimpleAgent {
         
         for(int pseudoChild : tree.getPsaudoChildren()){
         	send("VALUE", getId(), d, ID, Integer.MAX_VALUE).to(pseudoChild);            
-            Counter.msgCounter ++;
-            Counter.VALUEMsgCounter ++;
             //Debug
             if(debug){
             	System.out.println("VALUE: " + getId() +
@@ -204,21 +200,15 @@ public class BnBAdoptAgent extends SimpleAgent {
 
         	
         }
-            
-
-        
+                   
         if(!tree.isRoot()){
         	send("COST", getId(), cpa, LB, UB).to(tree.getParent());        
-            Counter.msgCounter ++;
-            Counter.COSTMsgCounter ++;
             //Debug
             if(debug){
             	System.out.println("COST: " + getId() +
             			" [" + d + "] to " + tree.getParent());
             }
         }
-            
-
     }
 
     private int findMinimum(int[] array, int flag, int initValue){     //flag = 1, return minumum,  else, return minimum index

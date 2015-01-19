@@ -4,8 +4,8 @@ package bgu.dcr.az.dev.tools;
  * Created by ChrisQin on 10/9/2014.
  */
 public class AssignmentInfo {
-    private int value;
-    private int ID;
+    public int value;
+    public int ID;
 
     public int getValue(){
         return value;

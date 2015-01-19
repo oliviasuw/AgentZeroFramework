@@ -9,10 +9,10 @@ import bgu.dcr.az.exen.pgen.AbstractProblemGenerator;
 import java.io.*;
 import java.util.Random;
 
-@Register(name = "multiVarProb")
-public class MultiVarProb extends AbstractProblemGenerator {
+@Register(name = "b1b2ProbGen")
+public class B1B2ProbGen extends AbstractProblemGenerator {
 
-	@Variable(name = "fileNo", description = "number of variables", defaultValue = "1")
+	@Variable(name = "fileNo", description = "index of file", defaultValue = "1")
     int fileNo = 1;
     
 	boolean first = true;

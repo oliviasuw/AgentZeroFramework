@@ -52,16 +52,17 @@ public enum ExperimentExecutionController implements Experiment.ExperimentListen
             worker.start();
             runningExperiment = ExperimentReader.read(xml);
             SwingDSL.configureUI();
-            MainWindow mainW = new MainWindow();
-
-            
+            // Su Wen commented
+            MainWindow mainW = new MainWindow();      
             if (debug) {
                 runningExperiment = mainW.startDebugging(runningExperiment, badProblemStorage);
             }
-
+       
             runningExperiment.addListener(this);
             
             DatabaseUnit.UNIT.start();
+            
+         // Su Wen commented
             mainW.startRunning(runningExperiment);
             running = true;
             runningExperiment.run();

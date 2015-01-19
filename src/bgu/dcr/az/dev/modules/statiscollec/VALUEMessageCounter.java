@@ -105,8 +105,7 @@ public class VALUEMessageCounter extends AbstractStatisticCollector<VALUEMessage
                         if(msg.getName().equals("VALUE")){
                         	counts[sender]++;
                         	Counter.VALUEMsgCounter ++;
-                        }
-                            
+                        }                            
                     }
                 }.hookInto(ex);
             case multiple:

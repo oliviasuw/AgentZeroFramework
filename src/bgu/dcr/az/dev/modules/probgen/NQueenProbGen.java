@@ -8,8 +8,8 @@ import bgu.dcr.az.exen.pgen.AbstractProblemGenerator;
 
 import java.util.Random;
 
-@Register(name = "nqueen")
-public class NQueenGenerator extends AbstractProblemGenerator {
+@Register(name = "nqueenProbGen")
+public class NQueenProbGen extends AbstractProblemGenerator {
 
 	@Variable(name = "n", description = "number of queens", defaultValue = "4")
     int n = 4;

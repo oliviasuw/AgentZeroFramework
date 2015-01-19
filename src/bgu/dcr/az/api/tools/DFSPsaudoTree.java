@@ -5,13 +5,11 @@
 package bgu.dcr.az.api.tools;
 
 import java.util.Set;
-
 import bgu.dcr.az.api.Agent;
 import bgu.dcr.az.api.agt.SimpleAgent;
 import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
 import bgu.dcr.az.dev.modules.statiscollec.Counter;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -63,10 +61,16 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
         return children;
     }
     
+    /**
+     * 
+     * @return All the ancestors of this agent (In the same branch)
+     * The ancestors are put into the result list from bottom to top.
+     * The ancestor of index [i] in the result has depth [size(ancestors) - i].
+     */
     public List<Integer> getAncestors(){
         return ancestors;
     }
-
+    
     public List<Integer> getChildDescendants(int child){
         return childDescendantsMap.get(child);
     }
@@ -76,7 +80,12 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
      */
     public List<Integer> getNeighbors(){
         neighbors = new LinkedList<Integer>();
-        neighbors.add(getParent());
+        
+        int parent = getParent();
+        if(parent != -1){ // if -1, I'm the root
+        	neighbors.add(getParent());
+        }
+        
         for(int neighbor: getPsaudoParents()){
             neighbors.add(neighbor);
         }
@@ -207,6 +216,8 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
             color = COLOR_BLACK;
             //System.out.println("A"+getId()+" IS BLACK");
             dones[getId()] = true;
+            // Suwen added
+            int parent_depth = depth - 1;
             if (parent >= 0) { // not root
 //                //System.out.println("A"+getId()+" SENDING SET_CHILD TO: "+parent);
                 ancestors.add(parent);
@@ -214,8 +225,6 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
                 	send("ADD_ANCESTORS", parent).to(descendant);
                 	Counter.treeBuildAddAncestorMsgCounter ++;
                 }
-                    
-                
                 send("SET_CHILD", seperator, descendants).to(parent);
                 Counter.treeBuildSetChildMsgCounter ++;
             }

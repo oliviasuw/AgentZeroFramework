@@ -110,8 +110,7 @@ public class COSTMessageCounter extends AbstractStatisticCollector<COSTMessageCo
                         if(msg.getName().equals("COST")){
                         	counts[sender]++;
                         	Counter.COSTMsgCounter ++;
-                        }
-                            
+                        }                           
                     }
                 }.hookInto(ex);
             case multiple:
