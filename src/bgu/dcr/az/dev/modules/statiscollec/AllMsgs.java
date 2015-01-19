@@ -94,7 +94,6 @@ public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
     	final String testFile = files[fileNo-1].getName();
 
         new Hooks.BeforeMessageSentHook() {
-
             @Override
             public void hook(int sender, int recepiennt, Message msg) {
             		counts[sender]++;

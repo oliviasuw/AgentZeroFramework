@@ -68,4 +68,15 @@ public class DefaultMessageQueue implements MessageQueue {
     public void releaseBlockedAgent() {
         add(SYSTEM_RELEASE_MESSAGE);
     }
+
+	/* 
+	 * @author: Olivia
+	 * @see bgu.dcr.az.api.exen.MessageQueue#delayedQueueIsEmpty()
+	 * No message is delayed in this (DefaultMessageQueue)
+	 */
+	@Override
+	public boolean delayedQueueIsEmpty() {
+		// TODO Auto-generated method stub
+		return true;
+	}
 }

@@ -115,6 +115,14 @@ public class DelayedMessageQueue implements MessageQueue {
 
         count.release();
     }
+    
+    /**
+     * @author Olivia
+     * @return
+     */
+    public PriorityBlockingQueue<Message> getDelayedQueue(){
+    	return futureQ;
+    }
 
     @Override
     public int availableMessages() {
@@ -144,6 +152,13 @@ public class DelayedMessageQueue implements MessageQueue {
         return !this.q.isEmpty();
     }
 
+    /**
+     * @author Olivia
+     */
+    @Override
+    public boolean delayedQueueIsEmpty() {
+        return this.futureQ.isEmpty();
+    }
     /**
      * @return from all the messages in the innerq the minimum message time - or
      * null if the innerq is empty.

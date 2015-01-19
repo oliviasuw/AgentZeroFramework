@@ -4,6 +4,10 @@
  */
 package bgu.dcr.az.api.exen;
 
+import java.util.concurrent.PriorityBlockingQueue;
+
+import bgu.dcr.az.api.Message;
+
 /**
  *
  * @author bennyl
@@ -23,4 +27,16 @@ public interface MessageQueue extends NonBlockingMessageQueue {
      * will get called when the agent finish
      */
     void onAgentFinish();
+
+	/**
+	 * @author Olivia
+	 * @return
+	 */
+	boolean delayedQueueIsEmpty();
+	
+    /**
+     * @author Olivia
+     * @return
+     */
+    public PriorityBlockingQueue<Message> getDelayedQueue();
 }

@@ -295,6 +295,25 @@ public abstract class Agent extends Agt0DSL {
     }
 
     /**
+     * @author Olivia
+     *
+     */
+    public boolean hasMessages(){
+    	if(mailbox.availableMessages() > 0 || !mailbox.delayedQueueIsEmpty()){
+    		return true;
+    	}
+    	return false;
+    }
+    
+    /**
+     * @author Olivia
+     * @return
+     */
+    public MessageQueue getMailbox(){
+    	return this.mailbox;
+    }
+    
+    /**
      * @return the next message from the mailbox - waiting if necessary for a
      * new message to arrive
      * @throws InterruptedException

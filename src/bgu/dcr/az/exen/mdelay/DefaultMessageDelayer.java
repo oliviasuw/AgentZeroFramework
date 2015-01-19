@@ -21,9 +21,9 @@ import java.util.Random;
 public class DefaultMessageDelayer implements MessageDelayer {
 
     @Variable(name = "type",
-              description = "the type of the delay: nccc/ncsc or , each depends on the corresponding statistic collectors",
-              defaultValue = "nccc")
-    String type = "nccc";
+              description = "the type of the delay: NCCC/NCSC, each depends on the corresponding statistic collectors",
+              defaultValue = "NCSC")
+    String type = "NCSC";
     @Variable(name = "seed",
               description = "seed for the randomization of the delay",
               defaultValue = "42")
@@ -47,10 +47,10 @@ public class DefaultMessageDelayer implements MessageDelayer {
 
     @Override
     public long extractTime(Message m) {
-        if (type.equals("ncsc")){
+        if (type.equals("NCCC")) {
+            return ((Long) m.getMetadata().get("nccc")).intValue();
+        } else {
             return NCSCToken.extract(m).getValue();//((Long) m.getMetadata().get("ncsc")).intValue();
-        }else{
-            return ((Long) m.getMetadata().get(type)).intValue();
         }
     }
 
@@ -61,11 +61,11 @@ public class DefaultMessageDelayer implements MessageDelayer {
         long otime = extractTime(m);
         long ntime = Math.max(delay + previousTime[from][to], otime + delay);
         previousTime[from][to] = ntime;
-        if (type.equals("ncsc")) {
+        if (type.equals("NCCC")) {
+            m.getMetadata().put("nccc", (long)ntime);
+        } else {
             NCSCToken.extract(m).setValue((long)ntime);
 //            m.getMetadata().put("ncsc", (long)ntime);
-        }else{
-            m.getMetadata().put(type, (long)ntime);    
         }
     }
 

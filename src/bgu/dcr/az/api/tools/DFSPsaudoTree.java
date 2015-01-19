@@ -233,7 +233,10 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
             } else if (color == COLOR_BLACK) {
                 insertPseudoParent(sendingAgent, depth);
                 seperator.add(sendingAgent);
-                //System.out.println("A"+getId()+" SENDING SET_PSAUDO_CHILD TO: "+sendingAgent);
+                
+                //Olivia debug
+                System.out.println("A"+getId()+" SENDING SET_PSAUDO_CHILD TO: "+sendingAgent);
+                
                 send("SET_PSAUDO_CHILD", descendants).to(sendingAgent);
             } else {
                 //System.out.println("A"+getId()+" SENDING REFUSE_VISIT TO: "+sendingAgent);
@@ -250,7 +253,8 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
             final Integer node = getCurrentMessage().getSender();
             //System.out.println("A"+getId()+" GOT DONE FROM: "+node);
             dones[getCurrentMessage().getSender()] = true;
-            if (allDone()) {
+//            if (allDone()) {
+            if (allDone() && !hasMessages()) {
                 //for(int child : children)
                     finish();
                 //System.out.println("A"+getId()+" FINISHING!!");
@@ -282,7 +286,10 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
         @WhenReceived("SET_PSAUDO_CHILD")
         public void handleSetPsaudoChild(LinkedList<Integer> childDescendants) {
             final Integer node = getCurrentMessage().getSender();
-            //System.out.println("A"+getId()+" GOT SET_PSAUDO_CHILD FROM: "+node);
+            
+            //Olivia debug
+            System.out.println("Agent"+getId()+" GOT SET_PSAUDO_CHILD FROM: "+node);
+            
             pchildren.add(node);
 
             descendants.remove(node);

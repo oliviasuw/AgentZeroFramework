@@ -1,9 +1,14 @@
-<experiment>   
-    <async-test name="SBB test1" run-var="p2" repeat-count="10" start="0.4" end="0.7" tick-size="0.1">
-        <dcop-connected n="6" d="4" p1="0.5"/>
-        <algorithm name="SBB"/>
-        <msgc-sc/>
-        <nccc-sc/>
+<experiment>
+    <async-test name="bnbadoptPlus" run-var="fileNo" repeat-count="1" start="1" end="1" tick-size="1">!
+        <singleVarPerAgentProbGen/>
+        <algorithm name="BnBAdoptPlus"/>
+        <allMsgs/>
+        <VALUEMessageCounter/>
+ 		<COSTMessageCounter/>
+ 		<DELMessageCounter/>
+ 		<TERMINATEMessageCounter/>
+ 		<myNCCC/>  		
+ 		<default-message-delayer type="NCCC" maximum-delay="10" minimum-delay="0"/>
         <default-tester/>
-    </async-test> 
+    </async-test>  
 </experiment>
