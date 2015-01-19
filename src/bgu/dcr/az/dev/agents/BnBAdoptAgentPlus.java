@@ -21,7 +21,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 @Algorithm(name="BnBAdoptPlus", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
 public class BnBAdoptAgentPlus extends SimpleAgent {
 
-	boolean debug = true;
+	boolean debug = false;
     /** Structures for BnB-ADOPT+ only **/
     boolean PlusOn = true;
     // key: child/pseudochild ID; value: lastSentVALUE
@@ -178,6 +178,10 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
 //    	MessageQueue tmp = getMailbox();
 //    	PriorityBlockingQueue<Message> tmpDQ = tmp.getDelayedQueue();
 //    	System.out.println("Delayed Queue of Agent[" + getId() +"] :    "+ tmpDQ.toString());
+//    	for(Message msg : tmpDQ){
+//    		long msgtime = ((Long) msg.getMetadata().get("nccc")).intValue();
+//    		System.out.println("Msg Time: " + msgtime);
+//    	}
     	
         for(int i = 0; i < getDomainSize(); i++){
             //if(getId()==2 && !tree.isLeaf()){

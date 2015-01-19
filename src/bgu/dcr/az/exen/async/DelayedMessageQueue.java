@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  *
  * @author bennyl
+ * Message queue when adding Message delayer [if not added, bgu.dcr.az.exen.async.AsyncMailer is instantiate]
  */
 public class DelayedMessageQueue implements MessageQueue {
 

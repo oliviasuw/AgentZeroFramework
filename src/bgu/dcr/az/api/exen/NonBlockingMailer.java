@@ -66,5 +66,10 @@ public interface NonBlockingMailer {
      * usecase: reset mailer
      */
     void unregisterAll();
+
+	/**
+	 * @author Olivia
+	 */
+	boolean forwardTime();
     
 }

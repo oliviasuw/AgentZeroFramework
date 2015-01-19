@@ -6,8 +6,8 @@ import bgu.dcr.az.api.Message;
 import bgu.dcr.az.api.exp.UnRegisteredAgentException;
 
 /**
- * This is a familiar concept, an Interface for designing mailers – the mailer
- * is attached to the Execution object – what means that you should be able to
+ * This is a familiar concept, an Interface for designing mailers 鈥� the mailer
+ * is attached to the Execution object 鈥� what means that you should be able to
  * attach different mailers to test the algorithm with (some mailers can help
  * with producing algorithm visualization and some can be used for debugging).
  *
@@ -35,4 +35,5 @@ public interface Mailer extends NonBlockingMailer {
      * the integrity of its results
      */
     public void releaseAllBlockingAgents();
+
 }

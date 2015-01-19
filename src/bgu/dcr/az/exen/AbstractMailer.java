@@ -158,4 +158,5 @@ public abstract class AbstractMailer implements Mailer {
     public void unregisterAll() {
         mailBoxes.clear();
     }
+    
 }

@@ -7,9 +7,11 @@ package bgu.dcr.az.exen;
 import bgu.dcr.az.api.Message;
 import bgu.dcr.az.api.exen.MessageQueue;
 import bgu.dcr.az.api.exp.InternalErrorException;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -78,5 +80,14 @@ public class DefaultMessageQueue implements MessageQueue {
 	public boolean delayedQueueIsEmpty() {
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.exen.MessageQueue#getDelayedQueue()
+	 */
+	@Override
+	public PriorityBlockingQueue<Message> getDelayedQueue() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

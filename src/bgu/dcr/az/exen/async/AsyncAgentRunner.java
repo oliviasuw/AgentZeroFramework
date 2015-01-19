@@ -42,6 +42,7 @@ public class AsyncAgentRunner implements AgentRunner, IdleDetector.Listener {
     protected Semaphore joinBlock = new Semaphore(1);
 
     public AsyncAgentRunner(Agent a, AbstractExecution exec) {
+    	
         this.exec = exec;
         this.currentExecutedAgent = a;
 
@@ -175,8 +176,12 @@ public class AsyncAgentRunner implements AgentRunner, IdleDetector.Listener {
         }
 
         if (currentExecutedAgent.isUsingIdleDetection()) {
-            //System.out.println("Idle Detected - " + currentExecutedAgent + " Being Notified.");
-
+//            System.out.println("Idle Detected - " + currentExecutedAgent + " Being Notified.");
+        	/**
+        	 * Olivia added
+        	 * Forward time when idle is detected
+        	 */
+        	exec.getMailer().forwardTime();
             currentExecutedAgent.onIdleDetected();
         }
 

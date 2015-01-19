@@ -1,5 +1,17 @@
 <experiment>
-    <async-test name="bnbadoptPlus" run-var="fileNo" repeat-count="1" start="1" end="1" tick-size="1">!
+    <!--async-test name="bnbadoptPlus" run-var="fileNo" repeat-count="1" start="1" end="3" tick-size="1">!
+        <singleVarPerAgentProbGen/>
+        <algorithm name="BnBAdopt"/>
+        <allMsgs/>
+        <VALUEMessageCounter/>
+ 		<COSTMessageCounter/>
+ 		<DELMessageCounter/>
+ 		<TERMINATEMessageCounter/>
+ 		<myNCCC/>  		
+ 		<default-message-delayer type="NCCC" maximum-delay="10" minimum-delay="0"/>
+        <default-tester/>
+    </async-test-->  
+    <async-test name="bnbadoptPlus" run-var="fileNo" repeat-count="1" start="1" end="3" tick-size="1">!
         <singleVarPerAgentProbGen/>
         <algorithm name="BnBAdoptPlus"/>
         <allMsgs/>
@@ -8,7 +20,6 @@
  		<DELMessageCounter/>
  		<TERMINATEMessageCounter/>
  		<myNCCC/>  		
- 		<default-message-delayer type="NCCC" maximum-delay="10" minimum-delay="0"/>
         <default-tester/>
     </async-test>  
 </experiment>
