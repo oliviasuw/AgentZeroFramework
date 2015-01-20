@@ -99,6 +99,7 @@ public class VALUEMessageCounter extends AbstractStatisticCollector<VALUEMessage
     	final String testFile = files[fileNo-1].getName();
         switch(agentType){
             case single:
+            {
                 new Hooks.BeforeMessageSentHook() {
                     @Override
                     public void hook(int sender, int recepiennt, Message msg) {
@@ -108,14 +109,27 @@ public class VALUEMessageCounter extends AbstractStatisticCollector<VALUEMessage
                         }                            
                     }
                 }.hookInto(ex);
-            case multiple:
-//                new Hooks.BeforeMessageSentHook() {
-//                    @Override
-//                    public void hook(int sender, int recepiennt, Message msg) {
-//                        if(msg.getName().equals("VALUE"))
-//                            counts[sender]++;
-//                    }
-//                }.hookInto(ex);
+                break;
+            }
+
+            case VA:
+            {
+              new Hooks.BeforeMessageSentHook() {
+                  @Override
+                  public void hook(int sender, int recepiennt, Message msg) {
+                  	int senderAgent = agents[sender].getRealAgent();
+                  	int recepienntAgent = agents[recepiennt].getRealAgent();
+                      if(senderAgent != recepienntAgent
+                      		&& msg.getName().equals("VALUE")){
+                    	  counts[sender]++;
+                    	  Counter.VALUEMsgCounter ++;
+                      }
+                          
+                  }
+              }.hookInto(ex);
+            	break;
+            }
+
         }
         
         new Hooks.TerminationHook() {
@@ -160,6 +174,6 @@ public class VALUEMessageCounter extends AbstractStatisticCollector<VALUEMessage
 
     public static enum AgentType {
         single,
-        multiple,
+        VA,
     }
 }

@@ -4,17 +4,19 @@
 //import java.io.File;
 //import java.io.FileReader;
 //import java.io.IOException;
+//import java.lang.reflect.Array;
+//import java.util.ArrayList;
 //import java.util.HashMap;
 //
 //public class VarAgentMap extends HashMap<Integer, Integer>{
 //	
 //	private static final long serialVersionUID = -7132226922211209400L;
 //	
-//	private int agentsNo;
+//	private int agentsNum;
 //	
 //	public VarAgentMap(File testFile){
 //
-//		agentsNo = 0;
+//		agentsNum = 0;
 //    	BufferedReader reader = null;
 //    	try{
 //    		reader = new BufferedReader(new FileReader(testFile));
@@ -22,7 +24,7 @@
 //    		while((line = reader.readLine())!=null){
 //    			int i = 0, j = 0;
 //    			if(line.contains("PSEUDOAGENT")){
-//    				agentsNo++;
+//    				agentsNum++;
 //    			}
 //    			if(line.contains("VARIABLE")){
 //    				String[] tokStrings = line.split("\\s");
@@ -36,8 +38,8 @@
 //    	}
 //	}
 //	
-//	public int getAgentsNo(){
-//		return agentsNo;
+//	public int getAgentsNum(){
+//		return agentsNum;
 //	}
 //	
 //}

@@ -32,8 +32,9 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     boolean cpaChanged = false;
     int lastSentLB = -1;
     int lastSentUB = Integer.MAX_VALUE;
-    // Suwen delted
-//    boolean ThReq = false;
+	boolean myThReq = false;
+    // Key: child/pseudochild ID; value: thReq
+    HashMap<Integer, Boolean> receivedThReqs = new HashMap();
 
     HashMap<Integer, AssignmentInfo> cpa = new HashMap<>();
     public int ID;
@@ -91,16 +92,9 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                     for(int j = 0; j < getDomainSize(); j++){
                         InitChild(i, j);
                     }
-                }
-                
+                }               
                 InitSelf();
                 backtrack();
-                
-//                // AC Enforcement
-//                if(ACEnforcementNeed){
-//                	checkDomainForDeletions();
-//                	ACEnforcementNeed = false;
-//                }
 
             }
         });
@@ -126,17 +120,6 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                 }
             }
         }
-//        //Debug
-//        if(getId()==6){
-//        	for(int x : tree.getAncestors()){
-//        		System.out.println("ancestor: " + x);
-//        	}
-//        }
-//        if(getId()==6){
-//        	for(int x : tree.getAncestorDepths()){
-//        		System.out.println("depth: " + x);
-//        	}
-//        }
 
         return _SCA;
     }
@@ -175,10 +158,9 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
         }
         ID++;
         TH = Integer.MAX_VALUE;
-        // Suwen delted
-//        if(PlusOn){
-//            ThReq = true;
-//        }
+        if(PlusOn){
+            myThReq = true;  // Always false to disable this function by Suwen
+        }
     }
     
     public void initACConstruct(){
@@ -220,10 +202,6 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
         }
         LB = findMinimum(LBD, 1, 0);
         UB = findMinimum(UBD, 1, 0);
-        //if(LB > UB){
-        //    System.out.println((LBD[d] >= min(TH, UB)) + "lbd1 = " + LBD[1] + " d = " + 
-        //findMinimum(LBD, 2, d));
-        //}
         
         int last_d = d;
 
@@ -278,13 +256,13 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     	
         for(int child : tree.getChildren()){
             if(PlusOn) {
-//                if(!lastSentVALUEs.containsKey(child) || lastSentVALUEs.get(child) != d
-//                		|| ThReq){
-                if(!lastSentVALUEs.containsKey(child) || lastSentVALUEs.get(child) != d){
+                if(!lastSentVALUEs.containsKey(child) || lastSentVALUEs.get(child) != d
+				|| (receivedThReqs.containsKey(child) &&  receivedThReqs.get(child))){
                 	
                     send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
                             + lbChildD[tree.getChildren().indexOf(child)][d],
                             myACConstruct.global_cPhi, myACConstruct.global_top).to(child);
+					receivedThReqs.put(child, false);		
                     //Debug
                     if(debug){
                     	System.out.println("VALUE: " + getId() +
@@ -309,11 +287,11 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     	
         for(int pseudoChild : tree.getPsaudoChildren()){
             if(PlusOn){
-//                if(!lastSentVALUEs.containsKey(pseudoChild) || lastSentVALUEs.get(pseudoChild) != d
-//                		|| ThReq){
-            	if(!lastSentVALUEs.containsKey(pseudoChild) || lastSentVALUEs.get(pseudoChild) != d){
+            	if(!lastSentVALUEs.containsKey(pseudoChild) || lastSentVALUEs.get(pseudoChild) != d
+				|| (receivedThReqs.containsKey(pseudoChild) &&  receivedThReqs.get(pseudoChild))){
                     send("VALUE", getId(), d, ID, Integer.MAX_VALUE,
                             myACConstruct.global_cPhi, myACConstruct.global_top).to(pseudoChild);
+					receivedThReqs.put(pseudoChild, false);
                     //Debug
                     if(debug){
                     	System.out.println("VALUE: " + getId() +
@@ -350,26 +328,17 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                     myACConstruct.myContribution = 0;
                     
                     if(tree.getParent() != -1){
-                    	// Suwen delted ThReq
-//                        send("COST", getId(), cpa, LB, UB, ThReq, myACConstruct.global_cPhi,
-//                        		myACConstruct.global_top, subtreeContri).to(tree.getParent());
-                        send("COST", getId(), cpa, LB, UB, myACConstruct.global_cPhi,
-                        		myACConstruct.global_top, subtreeContri).to(tree.getParent());
+                        send("COST", getId(), cpa, LB, UB, myThReq,
+						myACConstruct.global_cPhi, myACConstruct.global_top, subtreeContri).to(tree.getParent());
+						myThReq = false;		
                         //Debug
                         if(debug){
                         	System.out.println("COST: " + getId() +
                         			" to " + tree.getParent() + " LB: "
                         			+LB + " UB: " + UB);
-                        }
-                        
-                        if(getId() == 4 && LB==UB && LB == 67){
-                        	System.out.println("debug");
-                        }
+                        }                    
 
                     }
-                 // Suwen delted ThReq
-//                    ThReq = false;
-
                 }
                 lastSentCPA = cpa;
                 lastSentLB = LB;
@@ -380,11 +349,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
             	double subtreeContri = subtreeContribution + myACConstruct.myContribution;
                 subtreeContribution = 0;
                 myACConstruct.myContribution = 0;
-                // Suwen deleted
-//                send("COST", getId(), cpa, LB, UB, ThReq, myACConstruct.global_cPhi,
-//                		myACConstruct.global_top, subtreeContri).to(tree.getParent());
-                send("COST", getId(), cpa, LB, UB, myACConstruct.global_cPhi,
-                		myACConstruct.global_top, subtreeContri).to(tree.getParent());
+                send("COST", getId(), cpa, LB, UB, myThReq, 
+				myACConstruct.global_cPhi, myACConstruct.global_top, subtreeContri).to(tree.getParent());
                 //Debug
                 if(debug){
                 	System.out.println("COST: " + getId() +
@@ -526,10 +492,10 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
 //        }
     @WhenReceived("COST")
     public void handleCOST(int c, HashMap<Integer, AssignmentInfo>cCPA, int LBc, 
-        		int UBc, double global_cPhi, double global_top, double subtreeContri){        
-    	if(getId()==5){
-    		System.out.println("debug!!");
-    	}
+        		int UBc, boolean thReq, double global_cPhi, double global_top, double subtreeContri){        
+    	if(PlusOn){
+    		receivedThReqs.put(c, thReq);
+        }
         /** AC Enforcement **/
         this.subtreeContribution += subtreeContri;
         if(!tree.isRoot()){

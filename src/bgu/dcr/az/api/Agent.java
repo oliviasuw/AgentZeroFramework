@@ -53,6 +53,12 @@ public abstract class Agent extends Agt0DSL {
     public static final String SYS_TICK_MESSAGE = "__TICK__";
     public static final String SYS_TIMEOUT_MESSAGE = "__TIMEOUT__";
     private int id; //The Agent ID
+    
+    // Olivia Added
+    private List<Integer> myVars;  // The IDs of variables belong to me
+    private int realAgentID;  // In case of multi-vars per agent, using Virtual Agent apporach
+    						  // The running agent is actually a variable, while realAgentID is the agentID this virtual agent belongs to
+    
     private MessageQueue mailbox; //This Agent Mailbox
     private ImmutableProblem prob; // The Agent Local Problem
     private boolean finished = false; //The Status of the current Agent - TODO: TRANSFORM INTO A STATUS ENUM SO WE CAN BE ABLE TO QUERY THE AGENT ABOUT IT CURRENT STATUS
@@ -82,9 +88,10 @@ public abstract class Agent extends Agt0DSL {
         return prefix + "@" + getAlgorithmName();
     }
 
-    public void clearMailBox(){
-        pops.clearQueue();
-    }
+    // Added by Chris  Commented by Olivia
+//    public void clearMailBox(){
+//        pops.clearQueue();
+//    }
 
     /**
      * create a default agent - this agent will have id = -1 so you must
@@ -92,6 +99,10 @@ public abstract class Agent extends Agt0DSL {
      */
     public Agent() {
         this.id = -1;
+        
+        //Olivia added
+        this.myVars = new ArrayList();
+        
         beforeMessageProcessingHooks = new ArrayList<>();
         afterMessageProcessingHooks = new ArrayList<>();
         beforeCallingFinishHooks = new ArrayList<>();
@@ -240,6 +251,18 @@ public abstract class Agent extends Agt0DSL {
      */
     public int getId() {
         return id;
+    }
+    
+    /**
+     * 
+     * @return the id of variables that belongs to me
+     */
+    public List<Integer> getMyVars() {
+    	return myVars;
+    }
+    
+    public int getRealAgent(){
+    	return realAgentID;
     }
 
     /**
@@ -801,6 +824,24 @@ public abstract class Agent extends Agt0DSL {
 
             Agent.this.id = id;
             mailbox = getExecution().getMailer().register(Agent.this, mailGroupKey);
+        }
+        
+        /**
+         * @author Olivia
+         * set the variables' Id that belong to me
+         * @param myVarIds
+         */
+        public void setMyVarsId(List<Integer> myVarIds){
+        	Agent.this.myVars = myVarIds;
+        }
+        
+        /**
+         * This is the running agent, it could be virtual agent
+         * set the real ower agent that owns this (virtual) running agent
+         * @param owerAgent
+         */
+        public void setMyRealAgent(int owerAgent){
+        	Agent.this.realAgentID = owerAgent;
         }
 
         /**

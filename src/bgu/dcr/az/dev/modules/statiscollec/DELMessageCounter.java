@@ -115,14 +115,19 @@ public class DELMessageCounter extends AbstractStatisticCollector<DELMessageCoun
                            
                     }
                 }.hookInto(ex);
-            case multiple:
-//                new Hooks.BeforeMessageSentHook() {
-//                    @Override
-//                    public void hook(int sender, int recepiennt, Message msg) {
-//                        if(msg.getName().equals("DEL"))
-//                            counts[sender]++;
-//                    }
-//                }.hookInto(ex);
+                break;
+            case VA:
+                new Hooks.BeforeMessageSentHook() {
+                    @Override
+                    public void hook(int sender, int recepiennt, Message msg) {
+                      	int senderAgent = agents[sender].getRealAgent();
+                      	int recepienntAgent = agents[recepiennt].getRealAgent();
+                        if(senderAgent != recepienntAgent
+                        		&& msg.getName().equals("DEL"))
+                            counts[sender]++;
+                    }
+                }.hookInto(ex);
+                break;
         }
         
         new Hooks.TerminationHook() {
@@ -167,6 +172,6 @@ public class DELMessageCounter extends AbstractStatisticCollector<DELMessageCoun
 
     public static enum AgentType {
         single,
-        multiple,
+        VA,
     }
 }

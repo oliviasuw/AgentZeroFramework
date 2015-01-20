@@ -154,7 +154,6 @@ public class BnBAdoptAgent extends SimpleAgent {
         }
         LB = findMinimum(LBD, 1, 0);
         UB = findMinimum(UBD, 1, 0);
-        
 //        System.out.println("I am " + getId() + ", LB=" + LB + ", UB=" + UB);
 
         if(LBD[d] >= min(TH, UB)){
@@ -313,9 +312,6 @@ public class BnBAdoptAgent extends SimpleAgent {
     public void handleTERMINATE(){
         for(int child : tree.getChildren()){
             send("TERMINATE").to(child);
-            
-            Counter.msgCounter ++;
-            Counter.TERMINATEMsgCounter ++;
         }
         finish();
     }

@@ -80,7 +80,7 @@ public class MyNCCC extends AbstractStatisticCollector<MyNCCC.MyNCCCRecord> {
                 new Hooks.BeforeMessageProcessingHook() {
                     @Override
                     public void hook(Agent a, Message msg) {
-                        if (msg.getMetadata().containsKey("myNccc")) {
+                        if (msg.getMetadata().containsKey("nccc")) {
                             long newNccc = (Long) msg.getMetadata().get("nccc");
                             updateCurrentNccc(a.getId());
                             nccc[a.getId()] = max(newNccc, nccc[a.getId()]);                   

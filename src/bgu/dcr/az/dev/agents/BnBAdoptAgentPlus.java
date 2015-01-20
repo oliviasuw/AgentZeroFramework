@@ -34,7 +34,6 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
     boolean myThReq = false;
     // Key: child/pseudochild ID; value: thReq
     HashMap<Integer, Boolean> receivedThReqs = new HashMap();
-//    boolean receivedThReq = false;
 
     HashMap<Integer, AssignmentInfo> cpa = new HashMap<>();
     private int ID;
@@ -57,10 +56,10 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
         tree.calculate(this).andWhenDoneDo(new Continuation() {
             @Override
             public void doContinue () {
-            	if(debug){
-            		System.out.println("Agent " + getId() + " Depth:" 
-            	+ tree.getDepth() + " Parent:" + tree.getParent());
-            	}
+//            	if(debug){
+//            		System.out.println("Agent " + getId() + " Depth:" 
+//            	+ tree.getDepth() + " Parent:" + tree.getParent());
+//            	}
                 if(!tree.isRoot()){
                     SCA = getSCA();
                     //System.out.println("I am " + getId() + ", SCA: " + SCA);
@@ -144,10 +143,9 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
         ID++;
         TH = Integer.MAX_VALUE;
         if(PlusOn){
-//            ThReq = true;
-            myThReq = true;  // Always false to disable this function by Suwen
-        }
-    }
+			myThReq = true;  // Always false to disable this function by Suwen
+			}
+}
 
     public int positivInfinityPlus(int a, int b){
         if(a + b < 0)   //overflow
@@ -227,7 +225,6 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
             if(PlusOn) {
                 if(!lastSentVALUEs.containsKey(child) || lastSentVALUEs.get(child) != d
                 		|| (receivedThReqs.containsKey(child) && receivedThReqs.get(child))){
-//            	if(true) {
                     send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
                             + lbChildD[tree.getChildren().indexOf(child)][d]).to(child);
                     receivedThReqs.put(child, false);
@@ -247,11 +244,9 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
 
         }
         for(int pseudoChild : tree.getPsaudoChildren()){
-
             if(PlusOn){
                 if(!lastSentVALUEs.containsKey(pseudoChild) || lastSentVALUEs.get(pseudoChild) != d
                 		|| (receivedThReqs.containsKey(pseudoChild) &&  receivedThReqs.get(pseudoChild))){
-//            	if(true){
                     send("VALUE", getId(), d, ID, Integer.MAX_VALUE).to(pseudoChild);
                     receivedThReqs.put(pseudoChild, false);
                     if(debug){
@@ -273,7 +268,6 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
                         || lastSentUB != UB
                         || !lastSentCPA.equals(cpa)
                         || cpaChanged){
-//            	if(true){
                     cpaChanged = false;
                     send("COST", getId(), cpa, LB, UB, myThReq).to(tree.getParent());
                     myThReq = false;

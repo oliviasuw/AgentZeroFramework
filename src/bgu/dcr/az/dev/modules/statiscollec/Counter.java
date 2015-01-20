@@ -79,7 +79,6 @@ public class Counter {
 		
 	}
 	
-	
 	public static void clearStatistics(){
 		msgCounter = 0;
 		VALUEMsgCounter = 0;

@@ -254,7 +254,7 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
                 seperator.add(sendingAgent);
                 
                 //Olivia debug
-                System.out.println("A"+getId()+" SENDING SET_PSAUDO_CHILD TO: "+sendingAgent);
+//                System.out.println("A"+getId()+" SENDING SET_PSAUDO_CHILD TO: "+sendingAgent);
                 
                 send("SET_PSAUDO_CHILD", descendants).to(sendingAgent);
                 Counter.treeBuildSetPseudoChildMsgCounter ++;

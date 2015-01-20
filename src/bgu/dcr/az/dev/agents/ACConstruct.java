@@ -49,13 +49,6 @@ public class ACConstruct {
     	int valueA;
     	int valueB;
     	double cost;
-//    	Nogood duplicate(){
-//    		Nogood newNogood = new Nogood();
-//    		newNogood.valueA = this.valueA;
-//    		newNogood.valueB = this.valueB;
-//    		newNogood.cost = this.cost;
-//    		return newNogood;
-//    	}
     };
     class BinaryConstraint{
     	int varA;
@@ -66,11 +59,6 @@ public class ACConstruct {
     		binaryConstraint.varA = this.varA;
     		binaryConstraint.varB = this.varB;
     		Vector<Nogood> newNogoods = (Vector<Nogood>) nogoods.clone();
-//    		Vector<Nogood> newNogoods = new Vector();
-//    		for(Nogood nogood : this.nogoods){
-//    			newNogoods.add(nogood.duplicate());
-//    		}
-//    		binaryConstraint.nogoods = newNogoods;
     		return binaryConstraint;
     	}
     };
@@ -341,37 +329,6 @@ public class ACConstruct {
     	return -1;
     }
     
-//    public ACConstruct duplicate() {
-//        ACConstruct ac = new ACConstruct();
-//        
-//        ac.agentID = this.agentID;
-//        ac.myContribution = this.myContribution;
-//        ac.global_cPhi = this.global_cPhi;
-//        ac.global_top = this.global_top;
-//        
-//        for(int i = 0; i <this.domain.length; i++){
-//        	ac.domain[i] = this.domain[i];
-//        }
-//        
-//        ac.unary_costs = new Vector();
-//        for (int i = 0; i < this.unary_costs.size(); i++) {
-//            double uc = (Double) this.unary_costs.elementAt(i);
-//            ac.unary_costs.add(uc);
-//        }        
-//        
-//        ac.neighbors = new Vector();
-//        for (int neighbor : this.neighbors) {
-//            ac.neighbors.add(neighbor);
-//        }
-//        
-////        ac.constraints = (Vector<BinaryConstraint>) this.constraints.clone();
-//        ac.constraints = new Vector();
-//        for (BinaryConstraint cons : constraints) {
-//            ac.constraints.add(cons.duplicate()); 
-//        }
-//        
-//        return ac;
-//    }
     
     public int domainSizeAfterPruning() {
         int count = 0;
@@ -382,86 +339,97 @@ public class ACConstruct {
         return count;
     }
     
-//    public String toString() {
-//        String str = "";
-//        
-//        str += "var ID: "+myvar.varID+"\ndomain: ";
-//        for(int i = 0; i < myvar.domainSize; i++) 
-//            str += myvar.domain[i] + "("+myvar.pruned[i]+")";
-//        str += "\n";
-//
-//                
-//        str += "unary costs: ";
-//        for(int i = 0; i < myvar.domainSize; i++) 
-//            str += (Double) unary_costs.elementAt(i) + " ";
-//        
-//        
-//        str += "\nconstraint vars: ";
-//        for(int i = 0; i < cons_vars.size(); i++) 
-//            str += ((Variable) cons_vars.elementAt(i)).varID + " ";
-//        str += "\n";
-//        
-//        for(int j = 0; j < cons_vars.size(); j++) {
-//        
-//            Variable cv = (Variable)cons_vars.elementAt(j);
-//            MaxCOPConstraint mcc = getConstraint(myvar, cv);
-//            if (mcc == null) continue;
-//            if (cv.equalVar(myvar))  cv = mcc.var1;
-//            
-//            for(int i = 0; i < myvar.domainSize; i++) {
-//                Value myvar_d = myvar.domain[i];
-//
-//                for (int k = 0; k < cv.domainSize; k++) {
-//                    Value cv_d = cv.domain[k];
-//                    
-//                    str += "var"+myvar.varID+" var"+cv.varID+" "+myvar_d.toString()+" "+cv_d.toString()+" --> "+mcc.evaluate(myvar, myvar_d, cv, cv_d)+"\n";
-//                }
-//            }
-//        }
-//        
-//        str += "My Contribution (CPhi): "+myContribution+"\n";
-//
-//        return str;
-//    }
-//    
-//    public void toFile() {
-//        BufferedWriter data;
-//        try {
-//            data = new BufferedWriter(new FileWriter("var"+myvar.varID+".txt", true));
-//            
-//            data.write("VARIABLE "+myvar.varID+" 1 "+myvar.domainSize()+" ");
-//            for(int i = 0; i < myvar.domainSize; i++) 
-//                data.write((Double) unary_costs.elementAt(i) + " ");
-//            data.newLine();
-//            
-//            for(int j = 0; j < cons_vars.size(); j++) {
-//        
-//                Variable cv = (Variable)cons_vars.elementAt(j);
-//                MaxCOPConstraint mcc = getConstraint(myvar, cv);
-//                if (mcc == null) continue;
-//                if (cv.equalVar(myvar))  cv = mcc.var1;
-//                
-//                data.write("CONSTRAINT "+myvar.varID+" "+cv.varID+"\n");
-//
-//                for(int i = 0; i < myvar.domainSize; i++) {
-//                    Value myvar_d = myvar.domain[i];
-//
-//                    for (int k = 0; k < cv.domainSize; k++) {
-//                        Value cv_d = cv.domain[k];
-//
-//                        data.write("F "+myvar_d.toString()+" "+cv_d.toString()+" "+mcc.evaluate(myvar, myvar_d, cv, cv_d)+"\n");
-//                    }
-//                }
-//            }
-//            
-//            
-//            data.close();
-//        } catch (IOException ex) {
-//
-//        }
-//        
-//        
-//    }
-//    
+    /**
+     * For multiple variables per agent senario
+     * @param agent
+     */
+    public ACConstruct(AC_bnbadoptplus_VA agent){
+
+        depth = agent.tree.getDepth();
+        agentID = agent.getId();
+        
+    	File file = new File("costs.txt");
+        FileWriter fileWriter = null;
+		try {
+			fileWriter = new FileWriter(file, true);
+			fileWriter.write("agentID: "+ agentID+" depth: "+depth + "\n");
+			fileWriter.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		
+        int domainSize = agent.getDomain().size();
+        domain = new Integer[domainSize];
+        for(int i = 0; i < domainSize; i++){
+        	domain[i] = i;  // The value is the index of the value in the domain
+        }
+        
+//        domain = (Integer[]) agent.getDomain().toArray();
+        
+        myContribution = 0;
+        neighbors = agent.tree.getNeighbors();
+        neighborsDomains = new Vector();
+        neighborsPruned = new Vector();
+        
+        constraints = new Vector();
+        global_top = Double.MAX_VALUE;
+
+        ACRecordsProjectFromMe = new Integer[neighbors.size()];
+        ACRecordsProjectToMe = new Integer[neighbors.size()];
+        P_records = new Double[neighbors.size()][][];
+        for(int i = 0; i < neighbors.size(); i++){
+        	ACRecordsProjectFromMe[i] = 0;
+        	ACRecordsProjectToMe[i] = 0;
+        	P_records[i] = new Double[MAX_PROJECTION_NUM_RECORDED][];
+        	P_records[i][ACRecordsProjectFromMe[i]] = new Double[domain.length];
+        	
+        	int currentNeighbor = neighbors.get(i);
+        	int neighborDomainSize = agent.getDomainOf(currentNeighbor).size();
+
+        	Integer[] neighborDomain = new Integer[neighborDomainSize];
+            for(int j = 0; j < neighborDomainSize; j++){
+            	neighborDomain[j] = j;  // The value is the index of the value in the domain
+            }
+        	neighborsDomains.add(neighborDomain);
+        	
+        	boolean[] neighborPruned = new boolean[neighborDomain.length];
+        	for(int j = 0; j < neighborDomain.length; j++){
+        		neighborPruned[j] = false;
+        	}
+        	neighborsPruned.add(neighborPruned);
+        }
+        
+        unaryCosts = new Double[domain.length];
+        pruned = new boolean[domain.length];
+        for(int i = 0; i < domain.length; i++) {
+        	// The unary cost when agentID choose 0 as its value
+        	int value = domain[i];
+        	unaryCosts[i] = (double)agent.getConstraintCost(agentID, value);
+        	pruned[i] = false;
+        }
+        
+        ImmutableProblem prob = agent.getProblem();
+        for(int neighbor : neighbors) {
+        	BinaryConstraint binaryCon = new BinaryConstraint();
+        	binaryCon.varA = agentID;
+        	binaryCon.varB = neighbor;
+        	binaryCon.nogoods = new Vector();
+        	for(int val1 : domain){
+        		for(int val2 : domain){
+        			int cost = agent.getConstraintCost(agentID, val1, neighbor, val2);
+        			Nogood nogood = new Nogood();
+        			nogood.valueA = val1;
+        			nogood.valueB = val2;
+        			nogood.cost = cost;
+        			binaryCon.nogoods.add(nogood);
+        		}
+        	}
+        	constraints.add(binaryCon);
+        }
+    }
+     
     
 }

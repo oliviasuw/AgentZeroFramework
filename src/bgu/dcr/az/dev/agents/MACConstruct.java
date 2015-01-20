@@ -48,7 +48,6 @@ public class MACConstruct {
     
     /* MAC */
     public int depth;  // the depth of this copy
-    HashMap<Integer, Integer> ancestor_depth_map;
 
     class Nogood{
     	int valueA;
@@ -70,12 +69,14 @@ public class MACConstruct {
     		BinaryConstraint binaryConstraint = new BinaryConstraint();
     		binaryConstraint.varA = this.varA;
     		binaryConstraint.varB = this.varB;
-    		Vector<Nogood> newNogoods = (Vector<Nogood>) nogoods.clone();
-//    		Vector<Nogood> newNogoods = new Vector();
-//    		for(Nogood nogood : this.nogoods){
-//    			newNogoods.add(nogood.duplicate());
-//    		}
-//    		binaryConstraint.nogoods = newNogoods;
+    		binaryConstraint.nogoods = new Vector();
+    		for(Nogood aNogood : nogoods){
+    			Nogood newNogood = new Nogood();
+    			newNogood.valueA = aNogood.valueA;
+    			newNogood.valueB = aNogood.valueB;
+    			newNogood.cost = aNogood.cost;
+    			binaryConstraint.nogoods.add(newNogood);
+    		}
     		return binaryConstraint;
     	}
     };
@@ -91,28 +92,18 @@ public class MACConstruct {
         myDepth = agent.tree.getDepth();
         agentID = agent.getId();
         
+    	File file = new File("costs.txt");
+      FileWriter fileWriter = null;
+		try {
+			fileWriter = new FileWriter(file, true);
+			fileWriter.write("agentID: "+ agentID+" depth: "+myDepth + "\tcopyIndex: "+copyIndex+"\n");
+			fileWriter.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
         depth = copyIndex;
-        
-    	ancestor_depth_map = new HashMap();
-    	
-    	for(int i = 0; i < agent.tree.getAncestors().size(); i++){
-    		int ancestorID = agent.tree.getAncestors().get(i);
-    		int ancestorDepth = agent.tree.getAncestors().size() - i - 1;
-    		ancestor_depth_map.put(ancestorID, ancestorDepth);
-    	}
-        
-//    	File file = new File("costs.txt");
-//        FileWriter fileWriter = null;
-//		try {
-//			fileWriter = new FileWriter(file, true);
-//			fileWriter.write("agentID: "+ agentID+" depth: "+depth + "\n");
-//			fileWriter.close();
-//		} catch (IOException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-		
-		
 		
         int domainSize = agent.getDomain().size();
         domain = new Integer[domainSize];
@@ -196,9 +187,11 @@ public class MACConstruct {
     }
     
     public double getConstraint(int self, int myVal, int neighbor, int hisVal){
+    	
     	for(BinaryConstraint binaryCon : constraints){
     		if(binaryCon.varA == self && binaryCon.varB == neighbor){
-    			for(Nogood nogood : binaryCon.nogoods){
+    			
+    			for(Nogood nogood : binaryCon.nogoods){    				
     				if(nogood.valueA == myVal && nogood.valueB == hisVal){
     					return nogood.cost;
     				}
@@ -208,14 +201,14 @@ public class MACConstruct {
     	return 0;
     }
     
-    public int getAncestorDepth(int ancestor){
-    	for(Map.Entry<Integer, Integer> entry: ancestor_depth_map.entrySet()){
-    		if(entry.getKey() == ancestor){
-    			return entry.getValue();
-    		}
-    	}
-    	return -1;
-    }
+//    public int getAncestorDepth(int ancestor){
+//    	for(Map.Entry<Integer, Integer> entry: ancestor_depth_map.entrySet()){
+//    		if(entry.getKey() == ancestor){
+//    			return entry.getValue();
+//    		}
+//    	}
+//    	return -1;
+//    }
     
     /**
      * 
@@ -364,19 +357,15 @@ public class MACConstruct {
     }
     
     public MACConstruct duplicate() {
+    	if(agentID == 9){
+    		System.out.println("debug");
+    	}
+    	
     	MACConstruct ac = new MACConstruct();
         ac.myDepth = myDepth;
         ac.agentID = agentID;
         
         ac.depth = depth;
-        
-        ac.ancestor_depth_map = new HashMap();
-    	
-    	for(int i = 0; i < ancestor_depth_map.size(); i++){
-    		int ancestorID = ancestor_depth_map.get(i);
-    		int ancestorDepth = ancestor_depth_map.size() - i - 1;
-    		ac.ancestor_depth_map.put(ancestorID, ancestorDepth);
-    	}
 	
         ac.domain = new Integer[domain.length];
         for(int i = 0; i < domain.length; i++){
@@ -386,11 +375,8 @@ public class MACConstruct {
         ac.myContribution = myContribution;
         ac.neighbors = neighbors;
         ac.neighborsDomains = neighborsDomains;
-//        ac.neighborsPruned = (Vector<boolean[]>) neighborsPruned.clone();  //Suwen not sure about the clone!
-        
+
         ac.constraints = new Vector();
-        
-//    ac.constraints = (Vector<BinaryConstraint>) this.constraints.clone();
         for (BinaryConstraint cons : constraints) {
         	ac.constraints.add(cons.duplicate()); 
         }
@@ -401,26 +387,23 @@ public class MACConstruct {
         ac.ACRecordsProjectFromMe = new Integer[neighbors.size()];
         ac.ACRecordsProjectToMe = new Integer[neighbors.size()];
         ac.P_records = new Double[neighbors.size()][][];
+        ac.neighborsPruned = new Vector<boolean[]>();
         for(int i = 0; i < neighbors.size(); i++){
+        	int neighbor = neighbors.get(i);
+        	int neighborIndex = this.getNeighborIndex(neighbor);
         	ac.ACRecordsProjectFromMe[i] = 0;
         	ac.ACRecordsProjectToMe[i] = 0;
         	ac.P_records[i] = new Double[MAX_PROJECTION_NUM_RECORDED][];
         	ac.P_records[i][ACRecordsProjectFromMe[i]] = new Double[domain.length];
-        	
-        	int currentNeighbor = neighbors.get(i);
-//        	int neighborDomainSize = domain.length;
-//
-//        	Integer[] neighborDomain = new Integer[neighborDomainSize];
-//            for(int j = 0; j < neighborDomainSize; j++){
-//            	neighborDomain[j] = j;  // The value is the index of the value in the domain
-//            }
-//        	ac.neighborsDomains.add(neighborDomain);
-        	
-        	boolean[] neighborPruned = new boolean[domain.length];
-        	for(int j = 0; j < domain.length; j++){
-        		neighborPruned[j] = neighborsPruned.get(i)[j];
+
+        	boolean[] newNeighborPruned = new boolean[domain.length];
+    
+    		boolean[] ori_pruned = neighborsPruned.get(neighborIndex);
+    		
+        	for(int j = 0; j < ori_pruned.length; j++){
+        		newNeighborPruned[j] = ori_pruned[j];
         	}
-        	ac.neighborsPruned.add(neighborPruned);
+        	ac.neighborsPruned.add(newNeighborPruned);
         }
         
         ac.unaryCosts = new Double[domain.length];
@@ -432,25 +415,6 @@ public class MACConstruct {
         	ac.pruned[i] = pruned[i];
         }
         
-//        ImmutableProblem prob = agent.getProblem();
-//        for(int neighbor : neighbors) {
-//        	BinaryConstraint binaryCon = new BinaryConstraint();
-//        	binaryCon.varA = agentID;
-//        	binaryCon.varB = neighbor;
-//        	binaryCon.nogoods = new Vector();
-//        	for(int val1 : domain){
-//        		for(int val2 : domain){
-//        			int cost = agent.getConstraintCost(agentID, val1, neighbor, val2);
-//        			Nogood nogood = new Nogood();
-//        			nogood.valueA = val1;
-//        			nogood.valueB = val2;
-//        			nogood.cost = cost;
-//        			binaryCon.nogoods.add(nogood);
-//        		}
-//        	}
-//        	constraints.add(binaryCon);
-//        }
-        
         return ac;
     }
     
@@ -458,6 +422,16 @@ public class MACConstruct {
         int count = 0;
         for (int i = 0; i < domain.length; i++) {
             if (pruned[i] == false)
+                count++;
+        }
+        return count;
+    }
+    
+    public int neighborDomainSizeAfterPruning(int neighborIndex) {
+    	boolean [] neighborPruned = this.neighborsPruned.get(neighborIndex);
+        int count = 0;
+        for (int i = 0; i < domain.length; i++) {
+            if (neighborPruned[i] == false)
                 count++;
         }
         return count;

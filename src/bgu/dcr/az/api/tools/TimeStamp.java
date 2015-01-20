@@ -137,18 +137,6 @@ public class TimeStamp implements Serializable, DeepCopyable {
         }
         return 0;
     }
-    
-    public int compare2(TimeStamp o, Agent asking) {
-        for (int i = 0; i <= asking.getId(); i++) {
-            if (this.id[i] > o.id[i]) {
-                return 1;
-            }
-            if (this.id[i] < o.id[i]) {
-                return -1;
-            }
-        }
-        return 0;
-    }
 
     /**
      * @return the local time of the usingAgent (the agent that created this

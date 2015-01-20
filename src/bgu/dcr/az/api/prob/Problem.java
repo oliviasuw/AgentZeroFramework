@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -19,14 +18,31 @@ import java.util.Set;
  * @author guyafe, edited by bennyl
  */
 public class Problem implements ImmutableProblem {
-
-    private HashMap<String, Object> metadata = new HashMap<>();
-    protected HashMap<Integer, ArrayList<Integer>> agentVarMap;
+	
+	/**
+	 * 
+	 * @author Olivia
+	 *
+	 */
+    public static enum ModelType {
+        single,  // one variable per agent, default one
+        multiple_VA,  // multi variables per agent, virtual agent approach
+        multiple_OC,  // multi variables per agent, online compilation approach
+    }
+    public ModelType modelType = ModelType.single; //default
+    //For algorithm running, for multiple_VA, each agent has only one variable
+    protected HashMap<Integer, ArrayList<Integer>> agentVarMap = new HashMap(); 
+    //For multiple_VA, this is the map between real agent and variable
+    protected HashMap<Integer, ArrayList<Integer>> realAgentVarMap = new HashMap(); 
+    
+    
+    private HashMap<String, Object> metadata = new HashMap<>();  
+    protected int numvars;
     protected ImmutableSetOfIntegers[] domain;
     protected ConstraintsPackage constraints;
     protected ProblemType type;
     protected int maxCost = 0;
-    protected boolean singleDomain = true;
+    protected boolean singleDomain = true;  
 
     @Override
     public String toString() {
@@ -68,6 +84,19 @@ public class Problem implements ImmutableProblem {
     }
 
     /**
+     * Get the variable Ids that belongs to given agentId
+     */
+    @Override
+    public List<Integer> getVariables(int agentId) {
+        return agentVarMap.get(agentId);
+    }
+
+    @Override
+    public int getNumberOfAgents() {
+        return agentVarMap.size();
+    }
+    
+    /**
      * @return this problem metadata
      */
     @Override
@@ -93,59 +122,45 @@ public class Problem implements ImmutableProblem {
 
     @Override
     public int getNumberOfVariables() {
-        return getMapValuesSize(agentVarMap);
+        return numvars;
     }
-
-    public int getMapValuesSize(HashMap<Integer, ArrayList<Integer>> agentVarMap){
-        int sum = 0;
-        for(Map.Entry<Integer, ArrayList<Integer>> entry : agentVarMap.entrySet()){
-            sum += entry.getValue().size();
-        }
-        return sum;
-    }
-
-    @Override
-    public List<Integer> getVariables(int agentId) {
-        return agentVarMap.get(agentId);
-    }
-
-    @Override
-    public int getNumberOfAgents() {
-        return agentVarMap.size();
-    }
-
-    protected void initialize(ProblemType type, List<? extends Set<Integer>> domain, boolean singleDomain) {
-        initialize(type, createAgentVarMapOfVariblesSize(domain.size()), domain, singleDomain);
-    }
-
-    protected void initialize(ProblemType type, HashMap<Integer, ArrayList<Integer>> agentVarMap, List<? extends Set<Integer>> domain, boolean singleDomain) {
-        this.singleDomain = singleDomain;
-        this.domain = ImmutableSetOfIntegers.arrayOf(domain);
-        this.agentVarMap = agentVarMap;
-        this.type = type;
-        if(getNumberOfAgents() == getNumberOfVariables())          // single-var agents
-            this.constraints = type.newConstraintPackage(this.agentVarMap.values().size(), domain.get(0).size(), false);             //multi-var agents
-        else
-            this.constraints = type.newConstraintPackage(getNumberOfVariables(), domain.get(0).size(), true);
-    }
-
-    protected HashMap<Integer, ArrayList<Integer>> createAgentVarMapOfVariblesSize(int size) {
-        HashMap<Integer, ArrayList<Integer>> agentVarMap = new HashMap<>();
+    
+    /**
+     * model type: single
+     * @param size
+     */
+    protected void createAgentVarMapOfVariblesSize(int size) {
         for (int i = 0; i < size; i++) {
             ArrayList<Integer> temp = new ArrayList<>();
             temp.add(i);
             agentVarMap.put(i, temp);
-        }
-        return agentVarMap;
+            realAgentVarMap.put(i, temp);
+        }     
+    }
+
+    /**
+     * model type: single
+     * @param type
+     * @param domain
+     * @param singleDomain
+     */
+    protected void initialize(ProblemType type, List<? extends Set<Integer>> domain, boolean singleDomain) {
+        this.singleDomain = singleDomain;
+        this.domain = ImmutableSetOfIntegers.arrayOf(domain);
+        this.numvars = domain.size();
+        this.type = type;
+        // Olivia added
+        createAgentVarMapOfVariblesSize(numvars);
+        this.constraints = type.newConstraintPackage(numvars, domain.get(0).size());
     }
 
     /**
      * initialize the problem with multiple domains the number of variables is
      * the domain.size()
      *
-     * @param type the type of the problem
+     * @param type    the type of the problem
      * @param domains list of domains for each agent - this list also determines
-     * the number of variables that will be domains.size
+     *                the number of variables that will be domains.size
      */
     public void initialize(ProblemType type, List<? extends Set<Integer>> domains) {
         initialize(type, domains, false);
@@ -154,9 +169,9 @@ public class Problem implements ImmutableProblem {
     /**
      * initialize the problem with a single domain
      *
-     * @param type the problem type
+     * @param type              the problem type
      * @param numberOfVariables number of variables in this problem
-     * @param domain the domain for all the variables.
+     * @param domain            the domain for all the variables.
      */
     public void initialize(ProblemType type, int numberOfVariables, Set<Integer> domain) {
         initialize(type, ImmutableSetOfIntegers.repeat(domain, numberOfVariables), true);
@@ -173,13 +188,22 @@ public class Problem implements ImmutableProblem {
     public void initialize(ProblemType type, int numberOfVariables, int domainSize) {
         initialize(type, numberOfVariables, new HashSet<Integer>(Agt0DSL.range(0, domainSize - 1)));
     }
-
-    public void initialize(ProblemType type, HashMap<Integer, ArrayList<Integer>> agentVarMap, int domainSize) {
-        initialize(type, agentVarMap, new HashSet<Integer>(Agt0DSL.range(0, domainSize - 1)));
-    }
-
-    public void initialize(ProblemType type, HashMap<Integer, ArrayList<Integer>> agentVarMap, Set<Integer> domain) {
-        initialize(type, agentVarMap, ImmutableSetOfIntegers.repeat(domain, getMapValuesSize(agentVarMap)), true);
+    
+    /**
+     * @author Olivia
+     * @param type
+     * @param numberOfVariables
+     * @param domainSize
+     * @param model
+     * @param runningAgentVarMap
+     * @param trueAgentVarMap
+     */
+    public void initialize(ProblemType type, int numberOfVariables, int domainSize,
+    		ModelType model, HashMap runningAgentVarMap, HashMap trueAgentVarMap) {
+    	modelType = model;
+        initialize(type, numberOfVariables, new HashSet<Integer>(Agt0DSL.range(0, domainSize - 1)));
+    	agentVarMap = runningAgentVarMap;
+    	realAgentVarMap = trueAgentVarMap;
     }
 
     /**
@@ -196,29 +220,6 @@ public class Problem implements ImmutableProblem {
     @Override
     public ImmutableSet<Integer> getDomainOf(int var) {
         return domain[var];
-    }
-
-    public boolean isVariableConstrained(int owner, int v1, int v2) {
-        for (int i : getDomainOf(v1)) {
-            for (int j : getDomainOf(v2)) {
-                if (getConstraintCost(owner, v1, i, v2, j) > 0) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public ArrayList<Integer> getConstrainedVars(int src, int dest) {
-        ArrayList<Integer> constrainedVars = new ArrayList<>();
-        for (int variable1 : agentVarMap.get(src)) {
-            for (int variable2 : agentVarMap.get(dest)) {
-                if (isVariableConstrained(src, variable1, variable2)) {
-                    constrainedVars.add(variable1);
-                }
-            }
-        }
-        return constrainedVars; 
     }
 
     @Override
@@ -388,5 +389,22 @@ public class Problem implements ImmutableProblem {
 
     public int calculateGlobalCost(Assignment a) {
         return constraints.calculateGlobalCost(a);
+    }
+    
+    /**
+     * 
+     * @param varId
+     * @return the agentID that contains the given variable
+     *         if not found, return -1
+     */
+    public int getMyRealAgentId(int varId){
+    	for(int agent: realAgentVarMap.keySet()){
+    		for(int myVarID : realAgentVarMap.get(agent)){
+    			if(myVarID == varId) {
+    				return agent;
+    			}
+    		}
+    	}
+    	return -1;
     }
 }

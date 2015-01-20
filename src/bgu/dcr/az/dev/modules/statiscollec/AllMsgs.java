@@ -26,6 +26,8 @@ public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
     long[] counts;
     @Variable(name = "type", description = "type of the graph to show (BY_AGENT/BY_TESTFILE)", defaultValue = "BY_TESTFILE")
     Type graphType = Type.BY_TESTFILE;
+    @Variable(name = "agentType", description = "type of an agent whether contains multiple variables.", defaultValue = "single")
+    AgentType agentType = AgentType.single;
     Test test;
 
     @Override
@@ -93,16 +95,35 @@ public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
     	File[] files = dir.listFiles();
     	final String testFile = files[fileNo-1].getName();
 
-        new Hooks.BeforeMessageSentHook() {
-            @Override
-            public void hook(int sender, int recepiennt, Message msg) {
-            	Counter.msgCounter ++;
-            		counts[sender]++;
-            }
-        }.hookInto(ex);
-        
-        new Hooks.TerminationHook() {
+        switch(agentType){
+        case single:
+            new Hooks.BeforeMessageSentHook() {
+                @Override
+                public void hook(int sender, int recepiennt, Message msg) {
+                	Counter.msgCounter ++;
+                	counts[sender]++;
+                }
+            }.hookInto(ex);
+            break;
+            
+        case VA:
+            new Hooks.BeforeMessageSentHook() {
+                @Override
+                public void hook(int sender, int recepiennt, Message msg) {
+                	int senderAgent = agents[sender].getRealAgent();
+                	int recepienntAgent = agents[recepiennt].getRealAgent();
+                	if(senderAgent != recepienntAgent){
+                		Counter.msgCounter ++;
+                		counts[sender]++;
+                	}
+                		
+                }
+            }.hookInto(ex);
+            break;
+           
+    }
 
+        new Hooks.TerminationHook() {
             @Override
             public void hook() {
                 for (int i = 0; i < counts.length; i++) {
@@ -138,5 +159,10 @@ public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
     public static enum Type {
         BY_AGENT,
         BY_TESTFILE
+    }
+    
+    public static enum AgentType {
+        single,
+        VA,
     }
 }
