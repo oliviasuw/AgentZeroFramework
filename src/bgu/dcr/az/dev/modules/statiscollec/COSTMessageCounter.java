@@ -123,8 +123,11 @@ public class COSTMessageCounter extends AbstractStatisticCollector<COSTMessageCo
                     	int recepienntAgent = agents[recepiennt].getRealAgent();
                     	
                         if(senderAgent != recepienntAgent
-                        		&& msg.getName().equals("COST"))
-                            counts[sender]++;
+                        		&& msg.getName().equals("COST")){
+                        	counts[sender]++;
+                        	Counter.COSTMsgCounter ++;
+                        }
+                            
                     }
                 }.hookInto(ex);
                 break;

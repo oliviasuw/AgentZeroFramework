@@ -123,8 +123,11 @@ public class DELMessageCounter extends AbstractStatisticCollector<DELMessageCoun
                       	int senderAgent = agents[sender].getRealAgent();
                       	int recepienntAgent = agents[recepiennt].getRealAgent();
                         if(senderAgent != recepienntAgent
-                        		&& msg.getName().equals("DEL"))
-                            counts[sender]++;
+                        		&& msg.getName().equals("DEL")){
+                        	counts[sender]++;
+                        	Counter.DELMsgCounter ++;
+                        }
+                            
                     }
                 }.hookInto(ex);
                 break;
