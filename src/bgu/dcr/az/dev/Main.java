@@ -15,7 +15,7 @@ import bgu.dcr.az.exen.stat.db.DatabaseUnit;
 public class Main {
     public static void main(String[] args) throws InterruptedException, IOException {
     	
-        File file = new File("costs.txt");
+        File file = new File("statistics.txt");
         if(file.exists())
             file.delete();
 

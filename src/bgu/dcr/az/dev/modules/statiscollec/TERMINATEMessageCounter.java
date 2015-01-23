@@ -109,7 +109,7 @@ public class TERMINATEMessageCounter extends AbstractStatisticCollector<TERMINAT
 
                         if(msg.getName().equals("TERMINATE")){
                         	counts[sender]++;
-                        	Counter.TERMINATEMsgCounter ++;
+                        	
                         }
                             
                     }
@@ -122,8 +122,11 @@ public class TERMINATEMessageCounter extends AbstractStatisticCollector<TERMINAT
                       	int senderAgent = agents[sender].getRealAgent();
                       	int recepienntAgent = agents[recepiennt].getRealAgent();
                         if(senderAgent != recepienntAgent 
-                        		&& msg.getName().equals("TERMINATE"))
-                            counts[sender]++;
+                        		&& msg.getName().equals("TERMINATE")){
+                        	counts[sender]++;
+                        	Counter.TERMINATEMsgCounter ++;
+                        }
+                            
                     }
                 }.hookInto(ex);
                 break;

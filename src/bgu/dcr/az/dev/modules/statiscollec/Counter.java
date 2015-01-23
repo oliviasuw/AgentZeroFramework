@@ -29,8 +29,11 @@ public class Counter {
 	public static int treeBuildSetPseudoChildMsgCounter = 0;
 	public static int treeBuildDone = 0;
 	public static int treeBuildVisitRefuse = 0;
+	
+	public static double nccc = 0;
 
 	public static void reportStatistics(){
+		System.out.println("                   #Msg#                         ");
 		System.out.println("*********************TREE************************");
 		int totalBuildTree = treeBuildVisitMsgCounter + treeBuildAddAncestorMsgCounter
 				+ treeBuildSetChildMsgCounter + treeBuildSetPseudoChildMsgCounter
@@ -53,6 +56,8 @@ public class Counter {
     	System.out.println("*************************************************");
     	int total = totalBuildTree + msgCounter;
     	System.out.println("In total:\t" + total);
+    	System.out.println("                   #NCCC#                         ");
+    	System.out.println("NCCC:\t" + nccc);
 	}
 	public static void writeStatistics(State state) throws IOException{
         File file = new File("statistics.txt");
@@ -70,6 +75,7 @@ public class Counter {
 					+ Counter.COSTMsgCounter + "\t"
 					+ Counter.DELMsgCounter + "\t"
 					+ Counter.TERMINATEMsgCounter + "\t");
+			fileWriter.write(nccc + "\t");
 			fileWriter.write("\n");
 		}
 		else{

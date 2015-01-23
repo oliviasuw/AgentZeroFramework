@@ -114,6 +114,7 @@ public class VA_NCCCCounter extends AbstractStatisticCollector<VA_NCCCCounter.My
             @Override
             public void hook() {
                 submit(new MyNCCCRecord(testFile, max(realAgentNCCC)));
+                Counter.nccc = max(realAgentNCCC);
             }
         }.hookInto(ex);
     }

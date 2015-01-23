@@ -74,16 +74,16 @@ public class ACConstruct {
         depth = agent.tree.getDepth();
         agentID = agent.getId();
         
-    	File file = new File("costs.txt");
-        FileWriter fileWriter = null;
-		try {
-			fileWriter = new FileWriter(file, true);
-			fileWriter.write("agentID: "+ agentID+" depth: "+depth + "\n");
-			fileWriter.close();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+//    	File file = new File("costs.txt");
+//        FileWriter fileWriter = null;
+//		try {
+//			fileWriter = new FileWriter(file, true);
+//			fileWriter.write("agentID: "+ agentID+" depth: "+depth + "\n");
+//			fileWriter.close();
+//		} catch (IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
 		
 		
 		
@@ -337,98 +337,6 @@ public class ACConstruct {
                 count++;
         }
         return count;
-    }
-    
-    /**
-     * For multiple variables per agent senario
-     * @param agent
-     */
-    public ACConstruct(AC_bnbadoptplus_VA agent){
-
-        depth = agent.tree.getDepth();
-        agentID = agent.getId();
-        
-    	File file = new File("costs.txt");
-        FileWriter fileWriter = null;
-		try {
-			fileWriter = new FileWriter(file, true);
-			fileWriter.write("agentID: "+ agentID+" depth: "+depth + "\n");
-			fileWriter.close();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		
-		
-        int domainSize = agent.getDomain().size();
-        domain = new Integer[domainSize];
-        for(int i = 0; i < domainSize; i++){
-        	domain[i] = i;  // The value is the index of the value in the domain
-        }
-        
-//        domain = (Integer[]) agent.getDomain().toArray();
-        
-        myContribution = 0;
-        neighbors = agent.tree.getNeighbors();
-        neighborsDomains = new Vector();
-        neighborsPruned = new Vector();
-        
-        constraints = new Vector();
-        global_top = Double.MAX_VALUE;
-
-        ACRecordsProjectFromMe = new Integer[neighbors.size()];
-        ACRecordsProjectToMe = new Integer[neighbors.size()];
-        P_records = new Double[neighbors.size()][][];
-        for(int i = 0; i < neighbors.size(); i++){
-        	ACRecordsProjectFromMe[i] = 0;
-        	ACRecordsProjectToMe[i] = 0;
-        	P_records[i] = new Double[MAX_PROJECTION_NUM_RECORDED][];
-        	P_records[i][ACRecordsProjectFromMe[i]] = new Double[domain.length];
-        	
-        	int currentNeighbor = neighbors.get(i);
-        	int neighborDomainSize = agent.getDomainOf(currentNeighbor).size();
-
-        	Integer[] neighborDomain = new Integer[neighborDomainSize];
-            for(int j = 0; j < neighborDomainSize; j++){
-            	neighborDomain[j] = j;  // The value is the index of the value in the domain
-            }
-        	neighborsDomains.add(neighborDomain);
-        	
-        	boolean[] neighborPruned = new boolean[neighborDomain.length];
-        	for(int j = 0; j < neighborDomain.length; j++){
-        		neighborPruned[j] = false;
-        	}
-        	neighborsPruned.add(neighborPruned);
-        }
-        
-        unaryCosts = new Double[domain.length];
-        pruned = new boolean[domain.length];
-        for(int i = 0; i < domain.length; i++) {
-        	// The unary cost when agentID choose 0 as its value
-        	int value = domain[i];
-        	unaryCosts[i] = (double)agent.getConstraintCost(agentID, value);
-        	pruned[i] = false;
-        }
-        
-        ImmutableProblem prob = agent.getProblem();
-        for(int neighbor : neighbors) {
-        	BinaryConstraint binaryCon = new BinaryConstraint();
-        	binaryCon.varA = agentID;
-        	binaryCon.varB = neighbor;
-        	binaryCon.nogoods = new Vector();
-        	for(int val1 : domain){
-        		for(int val2 : domain){
-        			int cost = agent.getConstraintCost(agentID, val1, neighbor, val2);
-        			Nogood nogood = new Nogood();
-        			nogood.valueA = val1;
-        			nogood.valueB = val2;
-        			nogood.cost = cost;
-        			binaryCon.nogoods.add(nogood);
-        		}
-        	}
-        	constraints.add(binaryCon);
-        }
     }
      
     

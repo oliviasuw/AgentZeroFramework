@@ -206,10 +206,10 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
                 	System.out.println("#TERMINATE# from " + getId() +" to " + child);
                 }
             }
-            File file = new File("costs.txt");
+            File file = new File("statistics.txt");
             try {
                 FileWriter fileWriter = new FileWriter(file, true);
-                fileWriter.write("#" + UB + "\t");
+                fileWriter.write("\t" + UB + "\t");
                 fileWriter.close();
             } catch (IOException e) {
                 e.printStackTrace();

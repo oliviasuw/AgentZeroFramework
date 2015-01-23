@@ -99,6 +99,7 @@ public class AsyncDelayedMailer extends AbstractMailer implements IdleDetector.L
      * @return true if idle was resolved
      */
     public boolean forwardTime() {
+//    	System.out.println("CurrentTime: " + time.get());
     	
         boolean found = false;
         long min = -1;

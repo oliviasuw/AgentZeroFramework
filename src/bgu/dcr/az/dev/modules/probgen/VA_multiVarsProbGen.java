@@ -84,12 +84,12 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
     }
     
     private void writeToFile(){
-    	File costFile = new File("costs.txt");
+    	File costFile = new File("statistics.txt");
     	try {
         	if(first){
         		if(costFile.exists()){
         			costFile.delete();
-        			costFile = new File("costs.txt");
+        			costFile = new File("statistics.txt");
         		}
         		first = false;
         	}

@@ -335,6 +335,8 @@ public abstract class AbstractTest extends AbstractProcess implements Test, Exte
                     }
                 }
             }
+            //debug
+            System.out.println("~~~~~~~~~~~~~~~~~~here~~~~~~~~~~~~~~~~~~~");
             res = new TestResult();
 
         } catch (Exception ex) {

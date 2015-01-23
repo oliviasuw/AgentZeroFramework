@@ -416,6 +416,7 @@ public abstract class Agent extends Agt0DSL {
      * here so that you can implement your own shutdown mechanism
      */
     protected void finish() {
+    	
         if (!finished) {
             hookBeforeCallingFinish();
             finished = true;
@@ -700,6 +701,9 @@ public abstract class Agent extends Agt0DSL {
      * send termination to all agents
      */
     private void terminate() {
+    	//debug
+    	System.out.println("System terminate!!!!!!!!!!!!");
+    	
         send(SYS_TERMINATION_MESSAGE).toAll(range(0, getNumberOfVariables() - 1));
     }
 
