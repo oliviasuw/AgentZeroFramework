@@ -9,6 +9,7 @@ import bgu.dcr.az.api.exp.ConnectionFaildException;
 import bgu.dcr.az.api.exen.Test;
 import bgu.dcr.az.api.exen.stat.DBRecord;
 import bgu.dcr.az.api.exen.stat.Database;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -28,7 +29,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.h2.tools.Csv;
+
+import confs.defs;
 
 /**
  *
@@ -37,11 +41,12 @@ import org.h2.tools.Csv;
 public enum DatabaseUnit {
 
     UNIT;
-    public static final int MAXIMUM_NUMBER_OF_INMEMORY_STATISTICS = 5000000;
+    public static final int MAXIMUM_NUMBER_OF_INMEMORY_STATISTICS = defs.MAX_DATABASE_RECORDS;
     public static String DATA_BASE_NAME = "agentzero";
     private DBConnectionHandler connection;
     private Thread writerThread = null;
-    private ArrayBlockingQueue<SimpleEntry<DBRecord, Test>> dbQueue = new ArrayBlockingQueue<SimpleEntry<DBRecord, Test>>(MAXIMUM_NUMBER_OF_INMEMORY_STATISTICS);
+    private ArrayBlockingQueue<SimpleEntry<DBRecord, Test>> dbQueue = new 
+    		ArrayBlockingQueue<SimpleEntry<DBRecord, Test>>(MAXIMUM_NUMBER_OF_INMEMORY_STATISTICS);
     private Set<Class<? extends DBRecord>> knownRecords = new HashSet<Class<? extends DBRecord>>();
     private Map<Class<? extends DBRecord>, PreparedStatement> insertStatments = new HashMap<Class<? extends DBRecord>, PreparedStatement>();
     private Map<Signal, Signal> signals = new HashMap<Signal, Signal>();

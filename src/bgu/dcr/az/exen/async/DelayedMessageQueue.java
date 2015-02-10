@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DelayedMessageQueue implements MessageQueue {
 	
 	/* debug */
-	boolean debug = true;
+	boolean debug = false;
 
     private PriorityBlockingQueue<Message> futureQ;
     private PriorityBlockingQueue<Message> q;
@@ -110,8 +110,7 @@ public class DelayedMessageQueue implements MessageQueue {
         String msgName = e.getName();
         if(!msgName.equals("__TERMINATE__") &&
         		!msgName.equals("__TICK__") &&
-        		!msgName.equals("__TIMEOUT__") &&
-        		!msgName.equals("TERMINATE")){
+        		!msgName.equals("__TIMEOUT__")){
         	long mtime = dman.extractTime(e);
             if (mtime <= time) {
                 add(e);
