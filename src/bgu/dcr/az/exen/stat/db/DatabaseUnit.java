@@ -37,7 +37,7 @@ import org.h2.tools.Csv;
 public enum DatabaseUnit {
 
     UNIT;
-    public static final int MAXIMUM_NUMBER_OF_INMEMORY_STATISTICS = 5000;
+    public static final int MAXIMUM_NUMBER_OF_INMEMORY_STATISTICS = 5000000;
     public static String DATA_BASE_NAME = "agentzero";
     private DBConnectionHandler connection;
     private Thread writerThread = null;

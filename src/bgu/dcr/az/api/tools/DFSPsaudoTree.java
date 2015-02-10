@@ -309,7 +309,7 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
             final Integer node = getCurrentMessage().getSender();
             
             //Olivia debug
-            System.out.println("Agent"+getId()+" GOT SET_PSAUDO_CHILD FROM: "+node);
+//            System.out.println("Agent"+getId()+" GOT SET_PSAUDO_CHILD FROM: "+node);
             
             pchildren.add(node);
 

@@ -15,6 +15,9 @@ import bgu.dcr.az.dev.modules.statiscollec.Counter;
  * @author bennyl
  */
 public class ExecutionResult implements DeepCopyable {
+	
+	/* debug */
+	boolean debug = true;
 
     private Assignment finalAssignment = null;
     private Assignment correctAssignment = null;
@@ -25,7 +28,6 @@ public class ExecutionResult implements DeepCopyable {
     private double currentWeight = 1;
 
     public ExecutionResult(Execution resultingExecution) {
-    	// Olivia added
     	Counter.clearStatistics();
         this.resultingExecution = resultingExecution;
     }

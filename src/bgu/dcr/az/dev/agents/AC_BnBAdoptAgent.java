@@ -181,9 +181,15 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     }
 
     public int calcDelta(int val){
-        if(tree.isRoot())
-            return 0;
         int delta = 0;
+        
+        //Olivia added
+        // unary cost
+        delta += getConstraintCost(getId(), val);
+        
+        if(tree.isRoot())
+            return delta;
+        
         for(int ancestor : SCA){
             delta += getConstraintCost(getId(), val, ancestor, cpa.get(ancestor).getValue());
         }
@@ -209,7 +215,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
             int bestVal = findMinimum(LBD, 2, d);
             if(bestVal == -1){
             	System.out.println("All the values are pruned in varible " + getId());
-            	System.exit(-1);
+//            	System.exit(-1);
             }
             d = bestVal;
             ID++;
@@ -637,7 +643,11 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     	
         if (!ACPreprocessFlag && recoverFlag && needRecord) {
         	myACConstruct.P_records[neighborIndex][myACConstruct.ACRecordsProjectFromMe
-        	         [neighborIndex]] = new Double[getDomainSize()]; 
+        	         [neighborIndex]] = new Double[getProblem().getDomainSize(neighbor)];
+        	if(debug){
+        		System.out.println("The domain size of neighbor " + 
+        	neighbor + "is " + getProblem().getDomainSize(neighbor));
+        	}
         }
     	
     	
@@ -840,7 +850,20 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     	for(int i = projectionFromMeInNeighborCopy; i < projectionFromMeInMyCopy; i++){
     		myACConstruct.ACRecordsProjectFromMe[neighborIndex] --;
     		for(int hisVal : myACConstruct.neighborsDomains.elementAt(neighborIndex)){
+    			
     			if(myACConstruct.neighborsPruned.elementAt(neighborIndex)[hisVal]) continue;
+
+
+				if(myACConstruct.P_records[neighborIndex][i] == null){
+					// Olivia modified
+					Double[] ACCounter = new Double[getProblem().getDomainSize(neighbor)];
+					for(int m = 0; m < ACCounter.length; m++){
+						ACCounter[m] = (double) 0;
+					}
+					myACConstruct.P_records[neighborIndex][i] = ACCounter;
+//					myACConstruct.P_records[neighborIndex][i] = new Double[getProblem().getDomainSize(neighbor)];
+				}
+				System.out.println("k:" + myACConstruct.P_records[neighborIndex][i].length);
     			double alpha = myACConstruct.P_records[neighborIndex][i][hisVal];
     			myACConstruct.updateCostsWhenRollBack(getId(), neighbor, hisVal, alpha);
     		}

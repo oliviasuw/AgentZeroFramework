@@ -38,6 +38,9 @@ import java.util.logging.Logger;
  *
  */
 public abstract class Agent extends Agt0DSL {
+	
+	/* debug */
+	boolean debug = true;
 
     /**
      * the name for the system termination message the system termination
@@ -417,6 +420,10 @@ public abstract class Agent extends Agt0DSL {
      */
     protected void finish() {
     	
+    	if(debug){
+    		System.out.println("Finishing in Agent " + getId());
+    	}
+    	
         if (!finished) {
             hookBeforeCallingFinish();
             finished = true;
@@ -665,6 +672,9 @@ public abstract class Agent extends Agt0DSL {
      */
     @WhenReceived(Agent.SYS_TERMINATION_MESSAGE)
     public void handleTermination() {
+    	if(debug){
+    		System.out.println("handleTermination in agent " + getId());
+    	}
         finish();
     }
 
@@ -700,10 +710,10 @@ public abstract class Agent extends Agt0DSL {
     /**
      * send termination to all agents
      */
-    private void terminate() {
-    	//debug
-    	System.out.println("System terminate!!!!!!!!!!!!");
-    	
+    private void terminate() {   	
+    	if(debug){
+    		System.out.println("send SYS_TERMINATION in agent " + getId());
+    	}
         send(SYS_TERMINATION_MESSAGE).toAll(range(0, getNumberOfVariables() - 1));
     }
 

@@ -22,16 +22,28 @@
  		<myNCCC/> 		
         <default-tester/>
     </async-test-->  
-    <async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="107" end="550" tick-size="1">!
+    <!--async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="2" end="2" tick-size="1">!
         <VA_ProbGen/>
-        <algorithm name="BnBAdoptPlusWithAC"/>
+        <algorithm name="BnBAdoptPlus"/>
         <allMsgs agentType="VA"/>
         <VALUEMessageCounter agentType="VA"/>
  		<COSTMessageCounter agentType="VA"/>
  		<DELMessageCounter agentType="VA"/>
  		<TERMINATEMessageCounter agentType="VA"/>
  		<NCCC_VA/>
- 		<default-message-delayer type="NCCC" maximum-delay="50" minimum-delay="0"/>		
+ 		<default-message-delayer type="NCCC" maximum-delay="100" minimum-delay="0"/>		
+        <default-tester/>
+    </async-test--> 
+    <async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="2" end="551" tick-size="1">!
+        <singleWithUnary/>
+        <algorithm name="BnBAdoptPlusWithAC"/>
+        <allMsgs/>
+        <VALUEMessageCounter/>
+ 		<COSTMessageCounter/>
+ 		<DELMessageCounter/>
+ 		<TERMINATEMessageCounter/>
+ 		<NCCC_VA/>	
+ 		<default-message-delayer type="NCCC" maximum-delay="100" minimum-delay="0"/>	
         <default-tester/>
     </async-test> 
 </experiment>

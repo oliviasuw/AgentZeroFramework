@@ -161,9 +161,15 @@ public class BnBAdoptAgentPlus extends SimpleAgent {
     }
 
     public int calcDelta(int val){
-        if(tree.isRoot())
-            return 0;
         int delta = 0;
+        
+        //Olivia added
+        // unary cost
+        delta += getConstraintCost(getId(), val);
+        
+        if(tree.isRoot())
+            return delta;
+        
         for(int ancestor : SCA){
             delta += getConstraintCost(getId(), val, ancestor, cpa.get(ancestor).getValue());
         }

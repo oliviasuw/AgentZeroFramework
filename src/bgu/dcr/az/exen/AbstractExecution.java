@@ -42,6 +42,11 @@ import java.util.logging.Logger;
  * @author bennyl
  */
 public abstract class AbstractExecution extends AbstractProcess implements Execution {
+	
+	/**
+	 * debug
+	 */
+	boolean debug = true;
 
     private Experiment experiment; //the executing experiment
     private Problem problem;//the *global* problem
@@ -272,6 +277,9 @@ public abstract class AbstractExecution extends AbstractProcess implements Execu
 
     @Override
     public ExecutionResult getResult() {
+    	if(debug) {
+    		System.out.println("getResult");
+    	}
         return result;
     }
 
@@ -308,15 +316,22 @@ public abstract class AbstractExecution extends AbstractProcess implements Execu
             initialize();
             startExecution();
         } finally {
+        	
             finish();
+            
+            
             try {
+
                 for (TerminationHook hook : terminationHooks) {
                     hook.hook();
                 }
+
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+
             log(-1, "SYSTEM", "Execution Ended With Result = " + getResult());
+
             System.out.println("Execution Ended.");
         }
     }

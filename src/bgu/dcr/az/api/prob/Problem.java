@@ -151,7 +151,13 @@ public class Problem implements ImmutableProblem {
         this.type = type;
         // Olivia added
         createAgentVarMapOfVariblesSize(numvars);
-        this.constraints = type.newConstraintPackage(numvars, domain.get(0).size());
+        int maxDomainSize = 0;
+        for(ImmutableSetOfIntegers dom : this.domain){
+        	if(maxDomainSize < dom.size()){
+        		maxDomainSize = dom.size();
+        	}
+        }
+        this.constraints = type.newConstraintPackage(numvars, maxDomainSize);
     }
 
     /**

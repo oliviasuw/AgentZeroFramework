@@ -138,6 +138,7 @@ public class DELMessageCounter extends AbstractStatisticCollector<DELMessageCoun
             @Override
             public void hook() {
                 for (int i = 0; i < counts.length; i++) {
+                	System.out.println("hook DEL " + i + "th hook, total:" + counts.length);
                     submit(new DELMsgRecord(i, counts[i], testFile));
                 }
             }

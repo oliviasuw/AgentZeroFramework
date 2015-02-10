@@ -23,6 +23,9 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class AsyncDelayedMailer extends AbstractMailer implements IdleDetector.Listener {
 
+	/*debug*/
+	boolean debug = false;
+	
     MessageDelayer dman;
     AtomicLong time;
     IdleDetector timeForwardDetector;
@@ -99,7 +102,10 @@ public class AsyncDelayedMailer extends AbstractMailer implements IdleDetector.L
      * @return true if idle was resolved
      */
     public boolean forwardTime() {
-//    	System.out.println("CurrentTime: " + time.get());
+    	if(debug){
+    		System.out.println("CurrentTime: " + time.get());
+    	}
+    	
     	
         boolean found = false;
         long min = -1;

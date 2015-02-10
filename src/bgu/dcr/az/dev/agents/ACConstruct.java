@@ -109,11 +109,13 @@ public class ACConstruct {
         for(int i = 0; i < neighbors.size(); i++){
         	ACRecordsProjectFromMe[i] = 0;
         	ACRecordsProjectToMe[i] = 0;
-        	P_records[i] = new Double[MAX_PROJECTION_NUM_RECORDED][];
-        	P_records[i][ACRecordsProjectFromMe[i]] = new Double[domain.length];
+
         	
         	int currentNeighbor = neighbors.get(i);
         	int neighborDomainSize = agent.getDomainOf(currentNeighbor).size();
+        	
+        	P_records[i] = new Double[MAX_PROJECTION_NUM_RECORDED][];
+        	P_records[i][ACRecordsProjectFromMe[i]] = new Double[neighborDomainSize];
 
         	Integer[] neighborDomain = new Integer[neighborDomainSize];
             for(int j = 0; j < neighborDomainSize; j++){
@@ -143,8 +145,8 @@ public class ACConstruct {
         	binaryCon.varA = agentID;
         	binaryCon.varB = neighbor;
         	binaryCon.nogoods = new Vector();
-        	for(int val1 : domain){
-        		for(int val2 : domain){
+        	for(int val1 : agent.getDomainOf(agentID)){
+        		for(int val2 : agent.getDomainOf(neighbor)){
         			int cost = agent.getConstraintCost(agentID, val1, neighbor, val2);
         			Nogood nogood = new Nogood();
         			nogood.valueA = val1;
