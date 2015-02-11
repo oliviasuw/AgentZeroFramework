@@ -110,7 +110,13 @@ public class DelayedMessageQueue implements MessageQueue {
         String msgName = e.getName();
         if(!msgName.equals("__TERMINATE__") &&
         		!msgName.equals("__TICK__") &&
-        		!msgName.equals("__TIMEOUT__")){
+        		!msgName.equals("__TIMEOUT__") &&
+        		!msgName.equals("DONE") &&
+        		!msgName.equals("SET_CHILD") &&
+        		!msgName.equals("ADD_ANCESTORS") &&
+        		!msgName.equals("SET_PSAUDO_CHILD") &&
+        		!msgName.equals("REFUSE_VISIT") 
+        		){
         	long mtime = dman.extractTime(e);
             if (mtime <= time) {
                 add(e);

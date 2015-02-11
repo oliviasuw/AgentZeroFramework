@@ -34,9 +34,9 @@
  		<default-message-delayer type="NCCC" maximum-delay="100" minimum-delay="0"/>		
         <default-tester/>
     </async-test--> 
-    <async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="2" end="551" tick-size="1">!
+    <async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="9" end="12" tick-size="1">!
         <singleWithUnary/>
-        <algorithm name="BnBAdoptPlusWithAC"/>
+        <algorithm name="BnBAdoptWithUnary"/>
         <allMsgs/>
         <VALUEMessageCounter/>
  		<COSTMessageCounter/>
