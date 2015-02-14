@@ -33,7 +33,8 @@ public class DefaultCorrectnessTester extends AbstractCorrectnessTester {
                 return new CorrectnessTestResult(null, true);
             case DCOP:
                 ass = BranchAndBound.solve(globalProblem);
-                if((result.getCost()!=-1 && ass.calcCost(globalProblem) == result.getCost())||ass.calcCost(globalProblem) == result.getAssignment().calcCost(globalProblem)){
+                if((result.getCost()!=-1 && ass.calcCost(globalProblem) == result.getCost())||
+                		ass.calcCost(globalProblem) == result.getAssignment().calcCost(globalProblem)){
                     return new CorrectnessTestResult(ass, true);
                 } else {
                     return new CorrectnessTestResult(ass, false);

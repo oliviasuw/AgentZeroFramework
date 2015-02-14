@@ -4,6 +4,7 @@ import bgu.dcr.az.api.prob.cpack.ConstraintsPackage;
 import bgu.dcr.az.api.Agt0DSL;
 import bgu.dcr.az.api.ds.ImmutableSet;
 import bgu.dcr.az.api.tools.Assignment;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -204,10 +205,10 @@ public class Problem implements ImmutableProblem {
      * @param runningAgentVarMap
      * @param trueAgentVarMap
      */
-    public void initialize(ProblemType type, int numberOfVariables, int domainSize,
+    public void initialize(ProblemType type, int numberOfVariables, List<? extends Set<Integer>> domain,
     		ModelType model, HashMap runningAgentVarMap, HashMap trueAgentVarMap) {
     	modelType = model;
-        initialize(type, numberOfVariables, new HashSet<Integer>(Agt0DSL.range(0, domainSize - 1)));
+        initialize(type, domain);
     	agentVarMap = runningAgentVarMap;
     	realAgentVarMap = trueAgentVarMap;
     }
@@ -413,4 +414,5 @@ public class Problem implements ImmutableProblem {
     	}
     	return -1;
     }
+
 }

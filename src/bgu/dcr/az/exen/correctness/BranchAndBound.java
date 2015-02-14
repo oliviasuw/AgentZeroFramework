@@ -17,9 +17,32 @@ public class BranchAndBound {
     public static Assignment solve(Problem p) {
         return _solve(p, 0, new Assignment(), Integer.MAX_VALUE);
     }
-
+    
+//    /**
+//     * Olivia Centrialized BnB
+//     * @param p
+//     * @param var
+//     * @param cpa
+//     * @param ub
+//     * @return
+//     */
+//    private static Assignment _solve(Problem p) {
+//    	Assignment bcpa = new Assignment();
+//    	int ub = Integer.MAX_VALUE;
+//    	
+//    	for(int var = 0; var < p.getNumberOfVariables(); var++){
+//    		HashSet<Integer> cd = new HashSet<>(p.getDomainOf(var));
+//    		for(int d: cd){
+//    			
+//    		}
+//    	}
+//    	
+//    	
+//    	return bcpa;
+//    }
+    
     private static Assignment _solve(Problem p, int var, Assignment cpa, int ub) {
-        
+    	
         if (p.getNumberOfVariables() == var) return cpa;
         HashSet<Integer> cd = new HashSet<>(p.getDomainOf(var));
         Assignment bcpa = null;

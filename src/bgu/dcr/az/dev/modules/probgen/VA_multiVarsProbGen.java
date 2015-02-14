@@ -1,5 +1,6 @@
 package bgu.dcr.az.dev.modules.probgen;
 
+import bgu.dcr.az.api.Agt0DSL;
 import bgu.dcr.az.api.ano.Register;
 import bgu.dcr.az.api.ano.Variable;
 import bgu.dcr.az.api.prob.Problem;
@@ -11,7 +12,10 @@ import bgu.dcr.az.exen.pgen.AbstractProblemGenerator;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 @Register(name = "VA_ProbGen")
 public class VA_multiVarsProbGen extends AbstractProblemGenerator {
@@ -40,29 +44,33 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
     		reader = new BufferedReader(new FileReader(files[fileNo-1]));
     		String line = null;
     		int i = 0, j = 0;
+            List<Set<Integer>> domains = new ArrayList();
     		while((line = reader.readLine())!=null){	
     			if(line.contains("VARIABLE")){
     				String[] tokStrings = line.split("\\s");
     				agentsNo++;
     				domainSize = Integer.parseInt(tokStrings[4]);
-    				
+    				Set<Integer> dom = new HashSet<Integer>(Agt0DSL.range(0, domainSize - 1));
+					domains.add(dom);
     				int varID = Integer.parseInt(tokStrings[1]);
     				int agentID = Integer.parseInt(tokStrings[2]);
     				
-    	            ArrayList<Integer> temp = new ArrayList<>();
-    	            temp.add(varID);
-    				agentVarMap.put(varID, temp);
+    	            ArrayList<Integer> temp1 = new ArrayList<>();
+    	            temp1.add(varID);
+    				agentVarMap.put(varID, temp1);
     				
+    				ArrayList<Integer> temp2 = (ArrayList<Integer>) temp1.clone();
     				if(realAgentVarMap.containsKey(agentID)){
-    					temp = realAgentVarMap.get(agentID);
-    					temp.add(varID);
+    					temp2 = realAgentVarMap.get(agentID);
+    					temp2.add(varID);
     				}
-    				realAgentVarMap.put(agentID, temp);
+    				realAgentVarMap.put(agentID, temp2);
     				
     			}
     			if(line.contains("CONSTRAINT")){
     				if(!isInitialized){
-    					p.initialize(ProblemType.DCOP, agentsNo, domainSize, ModelType.multiple_VA, agentVarMap, realAgentVarMap);
+    					p.initialize(ProblemType.DCOP, agentsNo, domains, ModelType.multiple_VA, 
+    							agentVarMap, realAgentVarMap);
     					isInitialized = true;
     				}
     				String[] tokStrings = line.split("\\s");
@@ -71,11 +79,18 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
     			}
     			if(line.contains("F")){
     				String[] tokStrings = line.split("\\s");
-    				//System.out.println("i = " + i + ", vi = "  + Integer.parseInt(tokStrings[1]) + ", j = " + j + ", vj = "  + Integer.parseInt(tokStrings[2]) +", cost: " + Integer.parseInt(tokStrings[3]));
-    				p.setConstraintCost(i, Integer.parseInt(tokStrings[1]), j, Integer.parseInt(tokStrings[2]),
+					if(i == j){
+				        p.setConstraintCost(i, Integer.parseInt(tokStrings[1]),
     						Integer.parseInt(tokStrings[3]));
-    				p.setConstraintCost(j, Integer.parseInt(tokStrings[2]), i, Integer.parseInt(tokStrings[1]),
+					}
+					else{
+					    //System.out.println("i = " + i + ", vi = "  + Integer.parseInt(tokStrings[1]) + ", j = " + j + ", vj = "  + Integer.parseInt(tokStrings[2]) +", cost: " + Integer.parseInt(tokStrings[3]));
+    				    p.setConstraintCost(i, Integer.parseInt(tokStrings[1]), j, Integer.parseInt(tokStrings[2]),
     						Integer.parseInt(tokStrings[3]));
+    				    p.setConstraintCost(j, Integer.parseInt(tokStrings[2]), i, Integer.parseInt(tokStrings[1]),
+    						Integer.parseInt(tokStrings[3]));
+					}
+
     			}
     		}
     	}catch (NumberFormatException | IOException exception){
