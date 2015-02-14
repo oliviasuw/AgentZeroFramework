@@ -12,6 +12,7 @@ import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
 import bgu.dcr.az.api.tools.DFSPsaudoTree;
 import bgu.dcr.az.dev.agents.ACConstruct.BinaryConstraint;
+import bgu.dcr.az.dev.modules.statiscollec.Counter;
 import bgu.dcr.az.dev.tools.AssignmentInfo;
 
 import java.io.File;
@@ -19,10 +20,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+import confs.defs;
+
 @Algorithm(name="BnBAdoptPlusWithAC", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
 public class AC_BnBAdoptAgent extends SimpleAgent {
 
 	boolean debug = false;
+	boolean TERMINATE_CONTROL = true;
     /** Structures for BnB-ADOPT+ only **/
     boolean PlusOn = true;
     // key: child/pseudochild ID; value: lastSentVALUE
@@ -198,6 +202,24 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     }
 
     private void backtrack(){
+    	// Olivia
+    	if(TERMINATE_CONTROL){
+    		if(Counter.msgCounter >= defs.MAX_MSG_NUM && tree.isRoot()){
+                for(int child : tree.getChildren()){
+                    send("TERMINATE").to(child);
+                }
+                File file = new File("statistics.txt");
+                try {
+                    FileWriter fileWriter = new FileWriter(file, true);
+                    fileWriter.write("\t" + UB + "xxx\t");
+                    fileWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                finishWithCost(UB);
+                return;
+    		}
+    	}
         for(int i = 0; i < getDomainSize(); i++){
             //if(getId()==2 && !tree.isLeaf()){
             //System.out.println("delta = " + calcDelta(i) +" i = " + i + " " + lbChildD[0][i] + " " + ubChildD[0][i]);

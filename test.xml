@@ -22,7 +22,7 @@
  		<myNCCC/> 		
         <default-tester/>
     </async-test-->  
-    <async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="1" end="1500" tick-size="1">!
+    <async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="7" end="1500" tick-size="1">!
         <VA_ProbGen/>
         <algorithm name="BnBAdoptPlusWithAC"/>
         <allMsgs agentType="VA"/>
