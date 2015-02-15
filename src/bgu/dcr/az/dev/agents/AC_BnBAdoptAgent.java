@@ -27,6 +27,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
 
 	boolean debug = false;
 	boolean TERMINATE_CONTROL = true;
+	boolean IN_AGNET_COUNTER_ON = true;
     /** Structures for BnB-ADOPT+ only **/
     boolean PlusOn = true;
     // key: child/pseudochild ID; value: lastSentVALUE
@@ -207,6 +208,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     		if(Counter.msgCounter >= defs.MAX_MSG_NUM && tree.isRoot()){
                 for(int child : tree.getChildren()){
                     send("TERMINATE").to(child);
+                    if(IN_AGNET_COUNTER_ON)
+                    	Counter.TERMINATEMsgCounter ++;
                 }
                 File file = new File("statistics.txt");
                 try {
@@ -250,6 +253,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
         if((tree.isRoot() && UB == LB)){
             for(int child : tree.getChildren()){
                 send("TERMINATE").to(child);
+                if(IN_AGNET_COUNTER_ON)
+                	Counter.TERMINATEMsgCounter ++;
             }
             File file = new File("statistics.txt");
             try {
@@ -290,7 +295,9 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                     send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
                             + lbChildD[tree.getChildren().indexOf(child)][d],
                             myACConstruct.global_cPhi, myACConstruct.global_top).to(child);
-					receivedThReqs.put(child, false);		
+					receivedThReqs.put(child, false);	
+                    if(IN_AGNET_COUNTER_ON)
+                    	Counter.VALUEMsgCounter ++;
                     //Debug
                     if(debug){
                     	System.out.println("VALUE: " + getId() +
@@ -304,11 +311,14 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                 send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
                         + lbChildD[tree.getChildren().indexOf(child)][d],
                         myACConstruct.global_cPhi, myACConstruct.global_top).to(child);
+                if(IN_AGNET_COUNTER_ON)
+                	Counter.TERMINATEMsgCounter ++;
                 //Debug
                 if(debug){
                 	System.out.println("VALUE: " + getId() +
                 			" [" + d + "] to " + child);
                 }
+
             }
 
         }
@@ -320,6 +330,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                     send("VALUE", getId(), d, ID, Integer.MAX_VALUE,
                             myACConstruct.global_cPhi, myACConstruct.global_top).to(pseudoChild);
 					receivedThReqs.put(pseudoChild, false);
+	                if(IN_AGNET_COUNTER_ON)
+	                	Counter.VALUEMsgCounter ++;
                     //Debug
                     if(debug){
                     	System.out.println("VALUE: " + getId() +
@@ -331,6 +343,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
             else{
                 send("VALUE", getId(), d, ID, Integer.MAX_VALUE,
                         myACConstruct.global_cPhi, myACConstruct.global_top).to(pseudoChild);
+                if(IN_AGNET_COUNTER_ON)
+                	Counter.VALUEMsgCounter ++;
                 //Debug
                 if(debug){
                 	System.out.println("VALUE: " + getId() +
@@ -358,7 +372,9 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                     if(tree.getParent() != -1){
                         send("COST", getId(), cpa, LB, UB, myThReq,
 						myACConstruct.global_cPhi, myACConstruct.global_top, subtreeContri).to(tree.getParent());
-						myThReq = false;		
+						myThReq = false;	
+            	        if(IN_AGNET_COUNTER_ON)
+    	                	Counter.COSTMsgCounter ++;
                         //Debug
                         if(debug){
                         	System.out.println("COST: " + getId() +
@@ -379,6 +395,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                 myACConstruct.myContribution = 0;
                 send("COST", getId(), cpa, LB, UB, myThReq, 
 				myACConstruct.global_cPhi, myACConstruct.global_top, subtreeContri).to(tree.getParent());
+    	        if(IN_AGNET_COUNTER_ON)
+                	Counter.COSTMsgCounter ++;
                 //Debug
                 if(debug){
                 	System.out.println("COST: " + getId() +
@@ -569,6 +587,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     public void handleTERMINATE(){
         for(int child : tree.getChildren()){
             send("TERMINATE").to(child);
+	        if(IN_AGNET_COUNTER_ON)
+            	Counter.TERMINATEMsgCounter ++;
         }
         finish(d);
     }
@@ -736,12 +756,16 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     			
     			for(int child : tree.getChildren()){
                     send("TERMINATE").to(child);
+        	        if(IN_AGNET_COUNTER_ON)
+	                	Counter.TERMINATEMsgCounter ++;
                 }
     		}
     		
     		int neighborIndex = -1;
             for(int neighbor : tree.getPsaudoParents()){
                 send("DEL", getId(), valuesToDelete, myACConstruct).to(neighbor);
+    	        if(IN_AGNET_COUNTER_ON)
+                	Counter.DELMsgCounter ++;
                 //Debug
                 if(debug){
                 	System.out.println("DEL");
@@ -754,6 +778,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
             int parent = tree.getParent();
             if(-1 != parent){
                 send("DEL", getId(), valuesToDelete, myACConstruct).to(parent);
+    	        if(IN_AGNET_COUNTER_ON)
+                	Counter.DELMsgCounter ++;
                 //Debug
                 if(debug){
                 	System.out.println("DEL");
@@ -766,6 +792,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
 
             for(int neighbor : tree.getChildren()){
                 send("DEL", getId(), valuesToDelete, myACConstruct).to(neighbor);
+    	        if(IN_AGNET_COUNTER_ON)
+                	Counter.DELMsgCounter ++;
                 //Debug
                 if(debug){
                 	System.out.println("DEL");
@@ -777,6 +805,8 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
             }
             for(int neighbor : tree.getPsaudoChildren()){
                 send("DEL", getId(), valuesToDelete, myACConstruct).to(neighbor);
+    	        if(IN_AGNET_COUNTER_ON)
+                	Counter.DELMsgCounter ++;
                 //Debug
                 if(debug){
                 	System.out.println("DEL");
