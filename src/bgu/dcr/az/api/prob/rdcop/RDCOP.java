@@ -35,7 +35,9 @@ public class RDCOP {
     }
 
     public static void enhance(ImmutableProblem p, ArrayList<DynamicElement> delements) {
-        delements.sort(null);
+        // Olivia deleted temporally
+//        delements.sort(null);
+        
         p.getMetadata().put(RDCOP.class.getCanonicalName(), delements);
     }
 

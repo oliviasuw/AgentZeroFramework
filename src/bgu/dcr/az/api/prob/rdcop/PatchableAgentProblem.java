@@ -101,7 +101,7 @@ public class PatchableAgentProblem implements PossibleProblem {
             throw new UnsupportedOperationException("variable " + variable + " already exists");
         }
 
-        domains.put(variable, new HashSet<>());
+        domains.put(variable, new HashSet());
     }
 
     public boolean containsVariable(int variable) {
@@ -137,6 +137,16 @@ public class PatchableAgentProblem implements PossibleProblem {
 
     @Override
     public ArrayList<Integer> getConstrainedVars(int src, int dest) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public int getConstraintCost(int var1, int val1) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isConsistent(int var1, int val1, int var2, int val2) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

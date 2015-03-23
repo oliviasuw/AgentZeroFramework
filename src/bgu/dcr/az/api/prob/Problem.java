@@ -19,6 +19,10 @@ import java.util.Set;
  * @author guyafe, edited by bennyl
  */
 public class Problem implements ImmutableProblem {
+
+    public ArrayList<Integer> getConstrainedVars(int src, int dest) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 	
 	/**
 	 * 
@@ -56,7 +60,6 @@ public class Problem implements ImmutableProblem {
      * @return true if there is a constraint between var1 and var2 operation
      * cost: o(d^2)cc
      */
-    @Override
     public boolean isConstrained(int var1, int var2) {
         return getNeighbors(var1).contains(var2);
     }
@@ -68,7 +71,6 @@ public class Problem implements ImmutableProblem {
      * @param val2
      * @return true if var1=val1 consistent with var2=val2
      */
-    @Override
     public boolean isConsistent(int var1, int val1, int var2, int val2) {
         return getConstraintCost(var1, val1, var2, val2) == 0;
     }
@@ -79,7 +81,6 @@ public class Problem implements ImmutableProblem {
      * @param var
      * @return
      */
-    @Override
     public int getDomainSize(int var) {
         return getDomainOf(var).size();
     }
@@ -87,12 +88,10 @@ public class Problem implements ImmutableProblem {
     /**
      * Get the variable Ids that belongs to given agentId
      */
-    @Override
     public List<Integer> getVariables(int agentId) {
         return agentVarMap.get(agentId);
     }
 
-    @Override
     public int getNumberOfAgents() {
         return agentVarMap.size();
     }
@@ -100,7 +99,6 @@ public class Problem implements ImmutableProblem {
     /**
      * @return this problem metadata
      */
-    @Override
     public HashMap<String, Object> getMetadata() {
         return metadata;
     }
@@ -109,7 +107,6 @@ public class Problem implements ImmutableProblem {
      * @param var
      * @return all the variables that costrainted with the given var
      */
-    @Override
     public Set<Integer> getNeighbors(int var) {
         return constraints.getNeighbores(var);
     }
@@ -121,7 +118,6 @@ public class Problem implements ImmutableProblem {
         return domain[0];
     }
 
-    @Override
     public int getNumberOfVariables() {
         return numvars;
     }
@@ -216,7 +212,6 @@ public class Problem implements ImmutableProblem {
     /**
      * @return the type of the problem
      */
-    @Override
     public ProblemType type() {
         return type;
     }
@@ -224,17 +219,14 @@ public class Problem implements ImmutableProblem {
     /**
      * return the domain that belongs to variable var
      */
-    @Override
     public ImmutableSet<Integer> getDomainOf(int var) {
         return domain[var];
     }
 
-    @Override
     public int getConstraintCost(Assignment ass) {
         throw new UnsupportedOperationException("Not supported without providing owner. Please use getConstraintCost(int owner, Assignment ass)");
     }
 
-    @Override
     public int calculateCost(Assignment a) {
         throw new UnsupportedOperationException("Not supported when not accessed from inside of an agent code - please use getGlobalCost");
     }
@@ -352,14 +344,12 @@ public class Problem implements ImmutableProblem {
         return result.getCost();
     }
 
-    @Override
     public int getConstraintCost(int x1, int v1) {
         ConstraintCheckResult result = new ConstraintCheckResult();
         constraints.getConstraintCost(x1, x1, v1, result);
         return result.getCost();
     }
 
-    @Override
     public int getConstraintCost(int x1, int v1, int x2, int v2) {
         ConstraintCheckResult result = new ConstraintCheckResult();
         constraints.getConstraintCost(x1, x1, v1, x2, v2, result);

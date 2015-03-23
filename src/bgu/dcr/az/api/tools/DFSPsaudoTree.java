@@ -9,7 +9,7 @@ import bgu.dcr.az.api.Agent;
 import bgu.dcr.az.api.agt.SimpleAgent;
 import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
-import bgu.dcr.az.dev.modules.statiscollec.Counter;
+import confs.Counter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;

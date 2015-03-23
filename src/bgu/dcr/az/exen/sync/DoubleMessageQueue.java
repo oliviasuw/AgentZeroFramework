@@ -10,6 +10,7 @@ import bgu.dcr.az.api.exen.SystemClock;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  *
@@ -69,6 +70,16 @@ public class DoubleMessageQueue implements MessageQueue {
     @Override
     public void onAgentFinish() {
         //dont care
+    }
+
+    @Override
+    public boolean delayedQueueIsEmpty() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PriorityBlockingQueue<Message> getDelayedQueue() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     

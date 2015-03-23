@@ -8,7 +8,9 @@ import java.io.IOException;
 
 import bgu.dcr.az.api.DeepCopyable;
 import bgu.dcr.az.api.tools.Assignment;
-import bgu.dcr.az.dev.modules.statiscollec.Counter;
+import confs.Counter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * TODO: hide all the to* so that correctness testers will not have the power to affect the result directly
@@ -124,13 +126,11 @@ public class ExecutionResult implements DeepCopyable {
 
             @Override
             public String toString(ExecutionResult er) {
-            	//Olivia
-            	try {
-					Counter.writeStatistics(UNKNOWN);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                try {
+                    Counter.writeStatistics(UNKNOWN);
+                } catch (IOException ex) {
+                    Logger.getLogger(ExecutionResult.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 return "This Execution didnt ended yet so it result is unknown.";
             }
         },
@@ -138,13 +138,11 @@ public class ExecutionResult implements DeepCopyable {
 
             @Override
             public String toString(ExecutionResult er) {
-            	//Olivia
-            	try {
-					Counter.writeStatistics(WRONG);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                try {
+                    Counter.writeStatistics(WRONG);
+                } catch (IOException ex) {
+                    Logger.getLogger(ExecutionResult.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 return "This Execution ended with wrong results: it result was " + er.finalAssignment + " while example of a correct result is: " + er.correctAssignment;
             }
         },
@@ -152,13 +150,11 @@ public class ExecutionResult implements DeepCopyable {
 
             @Override
             public String toString(ExecutionResult er) {
-            	//Olivia
-            	try {
-					Counter.writeStatistics(CRUSHED);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                try {
+                    Counter.writeStatistics(CRUSHED);
+                } catch (IOException ex) {
+                    Logger.getLogger(ExecutionResult.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 return "The Execution crushed with the exception: " + (er.crushReason != null ? er.crushReason.getMessage() : "no-exception");
             }
         },
@@ -166,13 +162,11 @@ public class ExecutionResult implements DeepCopyable {
 
             @Override
             public String toString(ExecutionResult er) {
-            	//Olivia
-            	try {
-					Counter.writeStatistics(LIMITED);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                try {
+                    Counter.writeStatistics(LIMITED);
+                } catch (IOException ex) {
+                    Logger.getLogger(ExecutionResult.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 return "The Execution was limited by the attached limiter " + (er.crushReason != null ? er.crushReason.getMessage() : "no-exception");
             }
         },
@@ -182,13 +176,11 @@ public class ExecutionResult implements DeepCopyable {
             public String toString(ExecutionResult er) {
             	// Olivia Debug
             	Counter.reportStatistics();
-            	//Olivia
-            	try {
-					Counter.writeStatistics(SUCCESS);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                try {
+                    Counter.writeStatistics(SUCCESS);
+                } catch (IOException ex) {
+                    Logger.getLogger(ExecutionResult.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 if(er.getCost()!=-1)
                 {
                     if(er.finalAssignment == null)

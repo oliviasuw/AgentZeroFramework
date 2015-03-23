@@ -39,9 +39,10 @@ public interface ImmutableProblem {
      * @param val1
      * @return the cost of assigning var1=val1
      */
-    default int getConstraintCost(int var1, int val1) {
-        return getConstraintCost(var1, val1, var1, val1);
-    }
+//    default int getConstraintCost(int var1, int val1) {
+//        return getConstraintCost(var1, val1, var1, val1);
+//    }
+    int getConstraintCost(int var1, int val1);
 
     /**
      * return the cost of the k-ary constraint represented by the given
@@ -99,9 +100,10 @@ public interface ImmutableProblem {
      * @param val2
      * @return true if var1=val1 consistent with var2=val2
      */
-    default boolean isConsistent(int var1, int val1, int var2, int val2) {
-        return getConstraintCost(var1, val1, var2, val2) == 0;
-    }
+//    default boolean isConsistent(int var1, int val1, int var2, int val2) {
+//        return getConstraintCost(var1, val1, var2, val2) == 0;
+//    }
+    boolean isConsistent(int var1, int val1, int var2, int val2);
 
     /**
      * @param var1

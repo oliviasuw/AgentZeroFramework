@@ -126,4 +126,9 @@ public class SimpleNonBlockingMailer implements NonBlockingMailer {
         mailBoxes.clear();
     }
 
+    @Override
+    public boolean forwardTime() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
