@@ -1,74 +1,80 @@
-/**
- * OC_multiVarsProbGen.java
-   Created by Su Wen
-   Date: Jan 15, 2015
-   Time: 5:27:18 PM 
+/*
+ *@author: Olivia
  */
 package bgu.dcr.az.dev.modules.probgen;
 
+import bgu.dcr.az.api.Agt0DSL;
 import bgu.dcr.az.api.ano.Register;
 import bgu.dcr.az.api.ano.Variable;
 import bgu.dcr.az.api.prob.Problem;
-import bgu.dcr.az.api.prob.Problem.ModelType;
 import bgu.dcr.az.api.prob.ProblemType;
-import bgu.dcr.az.dev.modules.statiscollec.COSTMessageCounter.AgentType;
 import bgu.dcr.az.exen.pgen.AbstractProblemGenerator;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
-@Register(name = "OC_ProbGen")
+@Register(name = "OCProbGen")
 public class OC_multiVarsProbGen extends AbstractProblemGenerator {
 
-	@Variable(name = "fileNo", description = "index of file", defaultValue = "1")
+    //ADD ANY VARIABLES YOU NEED HERE LIKE THIS:
+    @Variable(name = "fileNo", description = "index of file", defaultValue = "1")
     int fileNo = 1;
-    
-	boolean first = true;
-	String fileName;
-    protected HashMap<Integer, ArrayList<Integer>> agentVarMap; //For algorithm running, for multiple_VA, each agent has only one variable
-    protected HashMap<Integer, ArrayList<Integer>> realAgentVarMap; //For multiple_VA, this is the map between real agent and variable
+    boolean first = true;
+    String fileName;
 	
-    @Override
     public void generate(Problem p, Random rand) {
     	File dir = new File("problems");
     	File[] files = dir.listFiles();
     	fileName = files[fileNo-1].getName();
+    	System.out.println(fileName);
     	writeToFile();
     	BufferedReader reader = null;
     	boolean isInitialized = false;
-    	int agentsNo = 0;
-    	int domainSize = 0;
-    	agentVarMap = new HashMap();
-    	realAgentVarMap = new HashMap();
     	try{
     		reader = new BufferedReader(new FileReader(files[fileNo-1]));
     		String line = null;
     		int i = 0, j = 0;
-    		while((line = reader.readLine())!=null){	
+    		HashMap<Integer, ArrayList<Integer>> agentVarMap = new HashMap<>();
+            HashMap<Integer, Integer> varDomainMap = new HashMap();  //key: varID  value: domainSize of the var
+    		while((line = reader.readLine())!=null){
     			if(line.contains("VARIABLE")){
     				String[] tokStrings = line.split("\\s");
-    				agentsNo++;
-    				domainSize = Integer.parseInt(tokStrings[4]);
-    				
-    				int varID = Integer.parseInt(tokStrings[1]);
-    				int agentID = Integer.parseInt(tokStrings[2]);
-    				
-    	            ArrayList<Integer> temp = new ArrayList<>();
-    	            temp.add(varID);
-    				
-    				if(realAgentVarMap.containsKey(agentID)){
-    					temp = realAgentVarMap.get(agentID);
-    					temp.add(varID);
+                                int varID = Integer.parseInt(tokStrings[1]);
+                                int agentID = Integer.parseInt(tokStrings[2]);
+    				int domainSize = Integer.parseInt(tokStrings[4]);
+                                varDomainMap.put(varID, domainSize);
+    				if(agentVarMap.containsKey(agentID)){
+    					agentVarMap.get(agentID).add(varID);
+    				}else{
+    					ArrayList<Integer> vars = new ArrayList<>();
+    					vars.add(varID);
+    					agentVarMap.put(agentID, vars);
     				}
-    				realAgentVarMap.put(agentID, temp);
-    				agentVarMap.put(agentID, temp);  // The running agent is always the same as the real agent
-    				
     			}
     			if(line.contains("CONSTRAINT")){
     				if(!isInitialized){
-    					p.initialize(ProblemType.DCOP, agentsNo, domainSize, ModelType.multiple_OC, agentVarMap, realAgentVarMap);
+                                        List<Set<Integer>> agentDomains = new ArrayList();
+                                        int agentNum = agentVarMap.size();
+                                        int agentDomainSize = 1;
+                                        ArrayList<Integer> varsInAgent = new ArrayList<>();
+                                        for(int k = 0; k < agentNum; k++) {
+                                            varsInAgent = agentVarMap.get(k);
+                                            agentDomainSize = 1;
+                                            for(int varID : varsInAgent) {
+                                                int varDom = varDomainMap.get(varID);
+                                                agentDomainSize *= varDom;
+                                            }
+                                            Set<Integer> dom = new HashSet<Integer>(Agt0DSL.range(0, agentDomainSize - 1));
+                                            agentDomains.add(dom);
+                                        }
+                                        p.initialize(ProblemType.DCOP, agentVarMap.size(), 
+                                        		agentDomains, varDomainMap, Problem.ModelType.multiple_OC, 
+    							agentVarMap, agentVarMap);
     					isInitialized = true;
     				}
     				String[] tokStrings = line.split("\\s");
@@ -78,28 +84,29 @@ public class OC_multiVarsProbGen extends AbstractProblemGenerator {
     			if(line.contains("F")){
     				String[] tokStrings = line.split("\\s");
     				//System.out.println("i = " + i + ", vi = "  + Integer.parseInt(tokStrings[1]) + ", j = " + j + ", vj = "  + Integer.parseInt(tokStrings[2]) +", cost: " + Integer.parseInt(tokStrings[3]));
-    				p.setConstraintCost(i, Integer.parseInt(tokStrings[1]), j, Integer.parseInt(tokStrings[2]),
-    						Integer.parseInt(tokStrings[3]));
-    				p.setConstraintCost(j, Integer.parseInt(tokStrings[2]), i, Integer.parseInt(tokStrings[1]),
-    						Integer.parseInt(tokStrings[3]));
+    				p.setVarConstraintCost(i, Integer.parseInt(tokStrings[1]), j, 
+    						Integer.parseInt(tokStrings[2]), Integer.parseInt(tokStrings[3]));
+    				p.setVarConstraintCost(j, Integer.parseInt(tokStrings[2]), i, 
+    						Integer.parseInt(tokStrings[1]), Integer.parseInt(tokStrings[3]));
     			}
     		}
+    		p.setupAgentNeighbors();
     	}catch (NumberFormatException | IOException exception){
     		System.out.println(exception);
     	}
     }
-    
     private void writeToFile(){
-    	File costFile = new File("costs.txt");
+    	File costFile = new File("statistics.txt");
     	try {
         	if(first){
         		if(costFile.exists()){
         			costFile.delete();
-        			costFile = new File("costs.txt");
+        			costFile = new File("statistics.txt");
         		}
         		first = false;
         	}
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(costFile, true)));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter
+					(new FileOutputStream(costFile, true)));
 			writer.write(fileName + " ");
 			writer.flush();
 			writer.close();

@@ -87,7 +87,7 @@ public class ACConstruct {
 		
 		
 		
-        int domainSize = agent.getDomain().size();
+        int domainSize = agent.getAgentDomain().size();
         domain = new Integer[domainSize];
         for(int i = 0; i < domainSize; i++){
         	domain[i] = i;  // The value is the index of the value in the domain
@@ -112,7 +112,7 @@ public class ACConstruct {
 
         	
         	int currentNeighbor = neighbors.get(i);
-        	int neighborDomainSize = agent.getDomainOf(currentNeighbor).size();
+        	int neighborDomainSize = agent.getAgentDomainOf(currentNeighbor).size();
         	
         	P_records[i] = new Double[MAX_PROJECTION_NUM_RECORDED][];
         	P_records[i][ACRecordsProjectFromMe[i]] = new Double[neighborDomainSize];
@@ -135,7 +135,7 @@ public class ACConstruct {
         for(int i = 0; i < domain.length; i++) {
         	// The unary cost when agentID choose 0 as its value
         	int value = domain[i];
-        	unaryCosts[i] = (double)agent.getConstraintCost(agentID, value);
+        	unaryCosts[i] = (double)agent.getAgentConstraintCost(agentID, value);
         	pruned[i] = false;
         }
         
@@ -145,9 +145,9 @@ public class ACConstruct {
         	binaryCon.varA = agentID;
         	binaryCon.varB = neighbor;
         	binaryCon.nogoods = new Vector();
-        	for(int val1 : agent.getDomainOf(agentID)){
-        		for(int val2 : agent.getDomainOf(neighbor)){
-        			int cost = agent.getConstraintCost(agentID, val1, neighbor, val2);
+        	for(int val1 : agent.getAgentDomainOf(agentID)){
+        		for(int val2 : agent.getAgentDomainOf(neighbor)){
+        			int cost = agent.getAgentConstraintCost(agentID, val1, neighbor, val2);
         			Nogood nogood = new Nogood();
         			nogood.valueA = val1;
         			nogood.valueB = val2;

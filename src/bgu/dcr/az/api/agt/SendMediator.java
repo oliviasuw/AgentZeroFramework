@@ -49,7 +49,7 @@ public class SendMediator {
     }
     
     public void toLastAgent(){
-        to(this.curp.getNumberOfVariables()-1);
+        to(this.curp.getNumberOfAgents()-1);
     }
 
     /**
@@ -70,7 +70,7 @@ public class SendMediator {
      * send the message to all the agents that came after the sending agent in the defined order
      */
     public void toAllAgentsAfterMe() {
-        for (int i = msg.getSender() + 1; i < curp.getNumberOfVariables(); i++) {
+        for (int i = msg.getSender() + 1; i < curp.getNumberOfAgents(); i++) {
             to(i);
         }
     }
@@ -85,7 +85,7 @@ public class SendMediator {
     @Deprecated
     public void toNeighbores(ImmutableProblem p) {
         Set<Integer> neighbors;
-        neighbors = p.getNeighbors(msg.getSender());
+        neighbors = p.getAgentNeighbors(msg.getSender());
         for (int n : neighbors) {
             to(n);
         }
@@ -98,7 +98,7 @@ public class SendMediator {
      */
     public void toNeighbores() {
         Set<Integer> neighbors;
-        neighbors = curp.getNeighbors(msg.getSender());
+        neighbors = curp.getAgentNeighbors(msg.getSender());
         for (int n : neighbors) {
             to(n);
         }

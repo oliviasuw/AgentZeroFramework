@@ -342,10 +342,10 @@ public class ProblemViewScreen extends javax.swing.JPanel implements ConstraintS
     // End of variables declaration//GEN-END:variables
 
     private void loadAgents(DefaultMutableTreeNode r) {
-        int varNum = p.getNumberOfVariables();
+        int varNum = p.getNumberOfAgents();
         for (int i = 0; i < varNum; i++) {
             DefaultMutableTreeNode node = new DefaultMutableTreeNode(new AgentInfo(i), true);
-            for (Integer j : p.getNeighbors(i)) {
+            for (Integer j : p.getAgentNeighbors(i)) {
                 final DefaultMutableTreeNode child = new DefaultMutableTreeNode(new AgentInfo(j), false);
                 node.add(child);
 //                System.out.println("index of agent " + j + " is " + node.getIndex(child));
@@ -356,7 +356,7 @@ public class ProblemViewScreen extends javax.swing.JPanel implements ConstraintS
     }
 
     private void prepareAll() {
-        int numVars = p.getNumberOfVariables();
+        int numVars = p.getNumberOfAgents();
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnCount(numVars + 1);
         model.setRowCount(numVars + 1);
@@ -366,7 +366,7 @@ public class ProblemViewScreen extends javax.swing.JPanel implements ConstraintS
         for (int j = 0; j < numVars; j++) {
             model.setValueAt(j, j + 1, 0);
             for (int i = 0; i < numVars; i++) {
-                if (p.isConstrained(i, j)) {
+                if (p.isAgentConstrained(i, j)) {
                     model.setValueAt(1, j + 1, i + 1);
                 } else {
                     model.setValueAt(0, j + 1, i + 1);
@@ -382,7 +382,7 @@ public class ProblemViewScreen extends javax.swing.JPanel implements ConstraintS
     }
 
     private void prepareConstraints(int ai, int aj) {
-        int domVars = p.getDomainSize(ai);
+        int domVars = p.getAgentDomainSize(ai);
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnCount(domVars + 1);
         model.setRowCount(domVars + 1);

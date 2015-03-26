@@ -18,6 +18,11 @@ import java.util.Set;
  *
  * @author bennyl
  */
+/**
+ * 
+ * @ assignments for variables
+ *
+ */
 public class Assignment implements Serializable, DeepCopyable {
 
     private LinkedHashMap<Integer, Integer> assignment;
@@ -92,7 +97,8 @@ public class Assignment implements Serializable, DeepCopyable {
     public Integer getAssignment(int var) {
         final Integer ass = assignment.get(var);
         if (ass == null) {
-            throw new UnassignedVariableException("calling getAssignment with variable " + var + " while its is not assigned");
+            throw new UnassignedVariableException("calling getAssignment with variable " + 
+        var + " while its is not assigned");
         }
         return ass;
     }
@@ -260,7 +266,7 @@ public class Assignment implements Serializable, DeepCopyable {
      * @return the unassigned variables in this assignemt - same as calling
      */
     public ImmutableSet<Integer> unassignedVariables(ImmutableProblem p) {
-        List<Integer> all = Agt0DSL.range(0, p.getNumberOfVariables() - 1);
+        List<Integer> all = Agt0DSL.range(0, p.getNumberOfVars() - 1);
         all.removeAll(assignment.keySet());
         return new ImmutableSet<>(all);
     }
@@ -273,7 +279,7 @@ public class Assignment implements Serializable, DeepCopyable {
     }
 
     public boolean isFull(ImmutableProblem problem) {
-        return getNumberOfAssignedVariables() == problem.getNumberOfVariables();
+        return getNumberOfAssignedVariables() == problem.getNumberOfVars();
     }
 
     /**

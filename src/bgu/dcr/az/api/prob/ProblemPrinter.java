@@ -26,10 +26,10 @@ public class ProblemPrinter {
         } else {
             maxCostSize = (int) Math.log10(p.maxCost);
         }
-        if (p.getDomainSize(0) == 1) {
+        if (p.getVarDomainSize(0) == 1) {
             domainSize = 1;
         } else {
-            domainSize = (int) Math.log10(p.getDomainSize(0) - 1);
+            domainSize = (int) Math.log10(p.getVarDomainSize(0) - 1);
         }
         String tmpForMaxCost[] = new String[maxCostSize + 2];
         String tmpForDomainSize[] = new String[domainSize + 2];
@@ -55,18 +55,18 @@ public class ProblemPrinter {
             tmpLineForDomainSize += "-";
         }
         sb.append("The Problem:\n");
-        for (int i = 0; i < p.getNumberOfVariables(); i++) {
-            for (int j = 0; j < p.getNumberOfVariables(); j++) {
-                if (!p.isConstrained(i, j)) {
+        for (int i = 0; i < p.getNumberOfVars(); i++) {
+            for (int j = 0; j < p.getNumberOfVars(); j++) {
+                if (!p.isVarConstrained(i, j)) {
                     continue;
                 }
                 if (i < j && !p.type().isAsymmetric()) {
                     continue;
                 }
-                sb.append("\n").append("Agent ").append(i).append(" --> Agent ").append(j).append("\n").append("\n");
+                sb.append("\n").append("Variable ").append(i).append(" --> Variable ").append(j).append("\n").append("\n");
                 sb.append(tmpForDomainSize[tmpForDomainSize.length - 1]).append("|");
                 line = "";
-                for (Integer l : p.getDomain()) {
+                for (Integer l : p.getVarDomain()) {
                     int size = 0;
                     if (l.intValue() != 0) {
                         size = (int) Math.log10(l.intValue());
@@ -78,10 +78,10 @@ public class ProblemPrinter {
                 line += "-";
                 sb.append("\n").append(line).append("\n");
 
-                for (Integer dj : p.getDomainOf(i)) {
+                for (Integer dj : p.getVarDomainOf(i)) {
                     boolean first = true;
-                    for (Integer di : p.getDomainOf(j)) {
-                        final int constraintCost = (int) p.getConstraintCost(i, di, j, dj);
+                    for (Integer di : p.getVarDomainOf(j)) {
+                        final int constraintCost = (int) p.getVarConstraintCost(i, di, j, dj);
                         int sizeDomain = 0;
                         if (dj != 0) {
                             sizeDomain = (int) Math.log10(dj);
@@ -104,7 +104,7 @@ public class ProblemPrinter {
     }
 
     private static void constraintsToString(Problem p, StringBuilder sb) {
-        int maxVariables = p.getNumberOfVariables();
+        int maxVariables = p.getNumberOfVars();
         maxVariables = (int) Math.log10(maxVariables);
         String tmp[] = new String[maxVariables + 2];
         String tmpLine = "";
@@ -123,7 +123,7 @@ public class ProblemPrinter {
         line += tmpLine;
         line += "-";
 
-        for (int l = 0; l < p.getNumberOfVariables(); l++) {
+        for (int l = 0; l < p.getNumberOfVars(); l++) {
             int size = 0;
             if (l != 0) {
                 size = (int) Math.log10(l);
@@ -134,14 +134,14 @@ public class ProblemPrinter {
 
         sb.append("\n").append(line).append("\n");
 
-        for (int l = 0; l < p.getNumberOfVariables(); l++) {
+        for (int l = 0; l < p.getNumberOfVars(); l++) {
             int size = 0;
             if (l != 0) {
                 size = (int) Math.log10(l);
             }
             sb.append(l).append(tmp[maxVariables - size]).append("|");
-            for (int k = 0; k < p.getNumberOfVariables(); k++) {
-                if (p.isConstrained(k, l)) {
+            for (int k = 0; k < p.getNumberOfVars(); k++) {
+                if (p.isVarConstrained(k, l)) {
                     sb.append("1").append(tmp[tmp.length - 1]);
                 } else {
                     sb.append("0").append(tmp[tmp.length - 1]);

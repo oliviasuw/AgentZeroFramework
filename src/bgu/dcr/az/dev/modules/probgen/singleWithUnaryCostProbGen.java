@@ -58,16 +58,17 @@ public class singleWithUnaryCostProbGen extends AbstractProblemGenerator {
     			if(line.contains("F")){
     				String[] tokStrings = line.split("\\s");
     				if(i == j) {
-    					p.setConstraintCost(i, Integer.parseInt(tokStrings[1]), Integer.parseInt(tokStrings[3]));
+    					p.setVarConstraintCost(i, Integer.parseInt(tokStrings[1]), Integer.parseInt(tokStrings[3]));
     				}
     				else{
-    					p.setConstraintCost(i, Integer.parseInt(tokStrings[1]), j, Integer.parseInt(tokStrings[2]), Integer.parseInt(tokStrings[3]));
-        				p.setConstraintCost(j, Integer.parseInt(tokStrings[2]), i, Integer.parseInt(tokStrings[1]), Integer.parseInt(tokStrings[3]));
+    					p.setVarConstraintCost(i, Integer.parseInt(tokStrings[1]), j, Integer.parseInt(tokStrings[2]), Integer.parseInt(tokStrings[3]));
+        				p.setVarConstraintCost(j, Integer.parseInt(tokStrings[2]), i, Integer.parseInt(tokStrings[1]), Integer.parseInt(tokStrings[3]));
     				}
     				//System.out.println("i = " + i + ", vi = "  + Integer.parseInt(tokStrings[1]) + ", j = " + j + ", vj = "  + Integer.parseInt(tokStrings[2]) +", cost: " + Integer.parseInt(tokStrings[3]));
     				
     			}
     		}
+    		p.setupAgentNeighbors();
     	}catch (NumberFormatException | IOException exception){
     		System.out.println(exception);
     	}

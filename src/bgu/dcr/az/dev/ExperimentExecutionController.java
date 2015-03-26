@@ -11,7 +11,6 @@ import bgu.dcr.az.api.exen.Execution;
 import bgu.dcr.az.api.exen.Experiment;
 import bgu.dcr.az.api.exen.Experiment.ExperimentListener;
 import bgu.dcr.az.api.exen.Test;
-import bgu.dcr.az.dev.modules.statiscollec.Counter;
 import bgu.dcr.az.dev.ui.MainWindow;
 import bgu.dcr.az.api.exen.escan.AlgorithmMetadata;
 import bgu.dcr.az.exen.stat.db.DatabaseUnit;

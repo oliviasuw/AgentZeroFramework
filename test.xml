@@ -22,15 +22,28 @@
  		<myNCCC/> 		
         <default-tester/>
     </async-test-->  
-    <async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="1" end="1" tick-size="1">!
-        <VA_ProbGen/>
-        <algorithm name="BnBAdoptPlusWithAC"/>
+<!--    <async-test name="VA" run-var="fileNo" repeat-count="1" start="1" end="1" tick-size="1">!-->
+<!--        <VA_ProbGen/>-->
+<!--        <algorithm name="BnBAdoptPlusWithAC"/>-->
+<!-- 		<NCCC_VA/>		-->
+<!-- 		<default-message-delayer type="NCCC" maximum-delay="100" minimum-delay="0"/>		-->
+<!--    </async-test> -->
+
+    <async-test name="OC" run-var="fileNo" repeat-count="1" start="1" end="2" tick-size="1">!
+        <OCProbGen/>
+        <algorithm name="BnBAdoptPlusOC"/>
+        <allMsgs/>
+        <VALUEMessageCounter />
+ 		<COSTMessageCounter/>
+ 		<DELMessageCounter/>
+ 		<TERMINATEMessageCounter/>
  		<NCCC_VA/>		
  		<default-message-delayer type="NCCC" maximum-delay="100" minimum-delay="0"/>		
     </async-test> 
-    <!--async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="1" end="1500" tick-size="1">!
+    
+    <!--async-test name="VA/Hybrid" run-var="fileNo" repeat-count="1" start="1" end="2" tick-size="1">!
         <VA_ProbGen/>
-        <algorithm name="BnBAdoptPlusWithAC"/>
+        <algorithm name="BnBAdoptPlus"/>
         <allMsgs agentType="VA"/>
         <VALUEMessageCounter agentType="VA"/>
  		<COSTMessageCounter agentType="VA"/>
@@ -39,7 +52,7 @@
  		<NCCC_VA/>		
  		<default-message-delayer type="NCCC" maximum-delay="100" minimum-delay="0"/>		
     </async-test-->
-    <!--async-test name="bnbadoptPlusWithAC" run-var="fileNo" repeat-count="1" start="1" end="550" tick-size="1">!
+    <!--async-test name="PC" run-var="fileNo" repeat-count="1" start="1" end="550" tick-size="1">!
         <singleWithUnary/>
         <algorithm name="BnBAdoptPlusWithAC"/>
         <allMsgs/>

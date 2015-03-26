@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import confs.Counter;
+
 @Register(name = "NCCC_VA")
 public class VA_NCCCCounter extends AbstractStatisticCollector<VA_NCCCCounter.MyNCCCRecord> {
 

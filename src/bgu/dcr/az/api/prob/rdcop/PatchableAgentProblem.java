@@ -13,6 +13,7 @@ import bgu.dcr.az.api.prob.KAryConstraint;
 import bgu.dcr.az.api.prob.ProblemType;
 import bgu.dcr.az.api.prob.cpack.KAryTreeConstraintPackage;
 import bgu.dcr.az.api.tools.Assignment;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +34,7 @@ public class PatchableAgentProblem implements PossibleProblem {
 
     public PatchableAgentProblem(Agent.AgentProblem underline) {
         this.underline = underline;
-        this.constraints = new KAryTreeConstraintPackage(underline.getNumberOfVariables());
+        this.constraints = new KAryTreeConstraintPackage(underline.getNumberOfVars());
     }
 
     @Override
@@ -42,7 +43,7 @@ public class PatchableAgentProblem implements PossibleProblem {
     }
 
     @Override
-    public int getConstraintCost(int var1, int val1, int var2, int val2) {
+    public int getVarConstraintCost(int var1, int val1, int var2, int val2) {
         final ConstraintCheckResult qt = underline.getQueryTemp();
         constraints.getConstraintCost(var1, var1, val1, var2, val2, qt);
         underline.increaseCC(qt.getCheckCost());
@@ -55,7 +56,7 @@ public class PatchableAgentProblem implements PossibleProblem {
     }
 
     @Override
-    public ImmutableSet<Integer> getDomainOf(int var) {
+    public ImmutableSet<Integer> getVarDomainOf(int var) {
         final Set<Integer> v = domains.get(var);
         if (v == null) {
             throw new UnsupportedOperationException("variable " + var + " is not exists!");
@@ -64,8 +65,8 @@ public class PatchableAgentProblem implements PossibleProblem {
     }
 
     @Override
-    public int getDomainSize(int var) {
-        return getDomainOf(var).size();
+    public int getVarDomainSize(int var) {
+        return getVarDomainOf(var).size();
     }
 
     @Override
@@ -74,18 +75,18 @@ public class PatchableAgentProblem implements PossibleProblem {
     }
 
     @Override
-    public Set<Integer> getNeighbors(int var) {
+    public Set<Integer> getVarNeighbors(int var) {
         return constraints.getNeighbores(var);
     }
 
     @Override
-    public int getNumberOfVariables() {
+    public int getNumberOfVars() {
         return domains.size();
     }
 
     @Override
-    public boolean isConstrained(int var1, int var2) {
-        return getNeighbors(var1).contains(var2);
+    public boolean isVarConstrained(int var1, int var2) {
+        return getVarNeighbors(var1).contains(var2);
     }
 
     @Override
@@ -141,13 +142,67 @@ public class PatchableAgentProblem implements PossibleProblem {
     }
 
     @Override
-    public int getConstraintCost(int var1, int val1) {
+    public int getVarConstraintCost(int var1, int val1) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public boolean isConsistent(int var1, int val1, int var2, int val2) {
+    public boolean isVarConsistent(int var1, int val1, int var2, int val2) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainOf(int)
+	 */
+	@Override
+	public ImmutableSet<Integer> getAgentDomainOf(int agent) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainSize(int)
+	 */
+	@Override
+	public int getAgentDomainSize(int agent) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentNeighbors(int)
+	 */
+	@Override
+	public Set<Integer> getAgentNeighbors(int agent) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#isAgentConstrained(int, int)
+	 */
+	@Override
+	public boolean isAgentConstrained(int agent1, int agent2) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentConstraintCost(int, int, int, int)
+	 */
+	@Override
+	public int getAgentConstraintCost(int var1, int val1, int var2, int val2) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentConstraintCost(int, int)
+	 */
+	@Override
+	public int getAgentConstraintCost(int var1, int val1) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
 
 }

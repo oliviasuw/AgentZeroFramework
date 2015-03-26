@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import confs.Counter;
+
 @Register(name = "TERMINATEMessageCounter")
 public class TERMINATEMessageCounter extends AbstractStatisticCollector<TERMINATEMessageCounter.TERMINATEMsgRecord> {
 

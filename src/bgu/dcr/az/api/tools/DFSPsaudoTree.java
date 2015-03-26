@@ -19,6 +19,11 @@ import java.util.List;
  *
  * @author bennyl
  */
+/**
+ * 
+ * @author Su Wen: on agents
+ *
+ */
 public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
 
     private static final int COLOR_BLACK = 0;
@@ -170,7 +175,7 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
 
 //            log("starting dfs");
             vertexId = this.getId();
-            dones = new boolean[getNumberOfVariables()];
+            dones = new boolean[getNumberOfAgents()];
             for (int i = 0; i < dones.length; i++) {
                 dones[i] = false;
             }
@@ -192,7 +197,7 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
         private void dfsVisit() {
             color = COLOR_GRAY;
 //            //System.out.println("A"+getId()+" IS GREY");
-            neighbors = new LinkedList<Integer>(getProblem().getNeighbors(this.getId()));
+            neighbors = new LinkedList<Integer>(getProblem().getAgentNeighbors(this.getId()));
 //            //System.out.println("A"+getId()+" NEIGHBORS ARE: "+ neighbors);
             if (parent != null) {
                 neighbors.remove(parent);
@@ -229,8 +234,8 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
                 Counter.treeBuildSetChildMsgCounter ++;
             }
 //            //System.out.println("A"+getId()+" SENDING DONE TO ALL");
-            send("DONE").toAll(range(0, getProblem().getNumberOfVariables() - 1));
-            Counter.treeBuildDone += getProblem().getNumberOfVariables() - 1;
+            send("DONE").toAll(range(0, getProblem().getNumberOfAgents() - 1));
+            Counter.treeBuildDone += getProblem().getNumberOfAgents() - 1;
             //send("DONE").to(1-getId());
         }
 

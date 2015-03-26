@@ -12,7 +12,6 @@ import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
 import bgu.dcr.az.api.tools.DFSPsaudoTree;
 import bgu.dcr.az.dev.agents.ACConstruct.BinaryConstraint;
-import bgu.dcr.az.dev.modules.statiscollec.Counter;
 import bgu.dcr.az.dev.tools.AssignmentInfo;
 
 import java.io.File;
@@ -20,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+import confs.Counter;
 import confs.defs;
 
 @Algorithm(name="BnBAdoptPlusWithAC", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
@@ -27,7 +27,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
 
 	boolean debug = false;
 	boolean TERMINATE_CONTROL = true;
-	boolean IN_AGNET_COUNTER_ON = true;
+	boolean IN_AGNET_COUNTER_ON = false;
     /** Structures for BnB-ADOPT+ only **/
     boolean PlusOn = true;
     // key: child/pseudochild ID; value: lastSentVALUE
@@ -89,12 +89,12 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                     }
                 }
                 ID = 0;
-                lbChildD = new int[tree.getChildren().size()][getDomainSize()];
-                LBD = new int[getDomainSize()];
-                ubChildD = new int[tree.getChildren().size()][getDomainSize()];
-                UBD = new int[getDomainSize()];
+                lbChildD = new int[tree.getChildren().size()][getAgentDomainSize()];
+                LBD = new int[getAgentDomainSize()];
+                ubChildD = new int[tree.getChildren().size()][getAgentDomainSize()];
+                UBD = new int[getAgentDomainSize()];
                 for(int i = 0; i < tree.getChildren().size(); i++){
-                    for(int j = 0; j < getDomainSize(); j++){
+                    for(int j = 0; j < getAgentDomainSize(); j++){
                         InitChild(i, j);
                     }
                 }               
@@ -114,11 +114,11 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     public Set<Integer> getSCA(){
         Set<Integer> _SCA = new HashSet<>();
         for(int ancestor : tree.getAncestors()){
-            if(getProblem().getNeighbors(getId()).contains(ancestor))
+            if(getProblem().getAgentNeighbors(getId()).contains(ancestor))
                 _SCA.add(ancestor);
             else{
                 for(int descendant : tree.getDescendants()){
-                    if(getProblem().getNeighbors(descendant).contains(ancestor)){
+                    if(getProblem().getAgentNeighbors(descendant).contains(ancestor)){
                         _SCA.add(ancestor);
                         break;
                     }
@@ -133,11 +133,11 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
         Set<Integer> _SCA = new HashSet<>();
         _SCA.add(getId());
         for(int ancestor : tree.getAncestors()){
-            if(getProblem().getNeighbors(id).contains(ancestor))
+            if(getProblem().getAgentNeighbors(id).contains(ancestor))
                 _SCA.add(ancestor);
             else{
                 for(int descendant : tree.getChildDescendants(id)){
-                    if(getProblem().getNeighbors(descendant).contains(ancestor)){
+                    if(getProblem().getAgentNeighbors(descendant).contains(ancestor)){
                         _SCA.add(ancestor);
                         break;
                     }
@@ -155,7 +155,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
 
     public void InitSelf(){
         int min = Integer.MAX_VALUE;
-        for(int value : getDomain()){
+        for(int value : getAgentDomain()){
             if(min > calcDelta(value) + sumlbORub(lbChildD, value)){
                 min = calcDelta(value) + sumlbORub(lbChildD, value);
                 d = value;
@@ -190,13 +190,13 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
         
         //Olivia added
         // unary cost
-        delta += getConstraintCost(getId(), val);
+        delta += getAgentConstraintCost(getId(), val);
         
         if(tree.isRoot())
             return delta;
         
         for(int ancestor : SCA){
-            delta += getConstraintCost(getId(), val, ancestor, cpa.get(ancestor).getValue());
+            delta += getAgentConstraintCost(getId(), val, ancestor, cpa.get(ancestor).getValue());
         }
         //System.out.println("sca: " + SCA + " delta : " + delta);
         return delta;
@@ -223,7 +223,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
                 return;
     		}
     	}
-        for(int i = 0; i < getDomainSize(); i++){
+        for(int i = 0; i < getAgentDomainSize(); i++){
             //if(getId()==2 && !tree.isLeaf()){
             //System.out.println("delta = " + calcDelta(i) +" i = " + i + " " + lbChildD[0][i] + " " + ubChildD[0][i]);
             //System.out.println("SCA: " + SCA);
@@ -502,7 +502,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
             for(int i = 0; i < tree.getChildren().size(); i++){
                 //System.out.println("child: " + tree.getChildren().get(i) + ", CHILDSCA: " + getSCA(tree.getChildren().get(i)));
                 if(getSCA(tree.getChildren().get(i)).contains(p))
-                    for(int j = 0; j < getDomainSize(); j++){
+                    for(int j = 0; j < getAgentDomainSize(); j++){
                         //System.out.println("true2");
                         InitChild(i, j);
                     }
@@ -552,7 +552,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
         priorityMerge(cCPA, cpa);
         if(!isCompatible(_cpa, cpa)){
             for(int i = 0; i < tree.getChildren().size(); i++){
-                for(int j = 0; j < getDomainSize(); j++){
+                for(int j = 0; j < getAgentDomainSize(); j++){
                     HashMap<Integer, AssignmentInfo> tmpCPA = new HashMap<Integer,
                     		AssignmentInfo>();
                     for(Map.Entry<Integer, AssignmentInfo> entry : _cpa.entrySet()){
@@ -685,10 +685,10 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     	
         if (!ACPreprocessFlag && recoverFlag && needRecord) {
         	myACConstruct.P_records[neighborIndex][myACConstruct.ACRecordsProjectFromMe
-        	         [neighborIndex]] = new Double[getProblem().getDomainSize(neighbor)];
+        	         [neighborIndex]] = new Double[getProblem().getAgentDomainSize(neighbor)];
         	if(debug){
         		System.out.println("The domain size of neighbor " + 
-        	neighbor + "is " + getProblem().getDomainSize(neighbor));
+        	neighbor + "is " + getProblem().getAgentDomainSize(neighbor));
         	}
         }
     	
@@ -696,7 +696,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     	double alpha = Double.MAX_VALUE;
     	double cost = 0;  	
     	if(ProjectToMe == projectDirection){
-    		for(int myVal : this.getDomain()){
+    		for(int myVal : this.getAgentDomain()){
     			alpha = myACConstruct.checkAlphaProjectToMe(getId(), myVal, neighbor);
     			if(0 < alpha){
     				myACConstruct.updateCostsWhenProjectToMe(getId(), myVal, neighbor, 
@@ -706,7 +706,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
 
     	}
     	if(ProjectFromMe == projectDirection){
-    		for(int hisVal : this.getDomainOf(neighbor)){
+    		for(int hisVal : this.getAgentDomainOf(neighbor)){
     			alpha = myACConstruct.checkAlphaProjectToNeighbor(getId(), neighbor, 
     					hisVal);
     			if(!ACPreprocessFlag && recoverFlag && needRecord){
@@ -732,7 +732,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
     void checkDomainForDeletions(){
     	Vector<Integer> valuesToDelete = new Vector();
     	double cPhi =  myACConstruct.global_cPhi;
-    	for(int myVal : this.getDomain()){
+    	for(int myVal : this.getAgentDomain()){
     		double cSelf = myACConstruct.unaryCosts[myVal];
     		if(cSelf + cPhi > myACConstruct.global_top && !myACConstruct.pruned[myVal]){
     			valuesToDelete.add(myVal);
@@ -908,7 +908,7 @@ public class AC_BnBAdoptAgent extends SimpleAgent {
 
 				if(myACConstruct.P_records[neighborIndex][i] == null){
 					// Olivia modified
-					Double[] ACCounter = new Double[getProblem().getDomainSize(neighbor)];
+					Double[] ACCounter = new Double[getProblem().getAgentDomainSize(neighbor)];
 					for(int m = 0; m < ACCounter.length; m++){
 						ACCounter[m] = (double) 0;
 					}

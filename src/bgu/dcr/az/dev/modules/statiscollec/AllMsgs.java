@@ -20,6 +20,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import confs.Counter;
+
 @Register(name = "allMsgs")
 public class AllMsgs extends AbstractStatisticCollector<AllMsgs.AllMsgsRecord> {
 

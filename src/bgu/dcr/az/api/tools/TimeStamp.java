@@ -33,18 +33,18 @@ import java.util.Arrays;
  * it sends a message containing its assignment, the agent copies its current
  * counter onto the message. Each message holds a vector containing the counters
  * of the agents it passed through. The i-th element of the vector corresponds
- * to Agent i’s counter. This vector is in fact the time-stamp. A
+ * to Agent i鈥檚 counter. This vector is in fact the time-stamp. A
  * lexicographical comparison of two such vectors will reveal which time-stamp
  * is more up-to-date. Each agent saves a copy of what it knows to be the most
  * up-to-date time-stamp. When receiving a new message with a newer time-stamp,
- * the agent updates its local saved “latest” time-stamp. Suppose agent Ai
+ * the agent updates its local saved 鈥渓atest鈥� time-stamp. Suppose agent Ai
  * receives a message with a time-stamp that is lexicographically smaller than
- * the locally saved “latest”, by comparing the ﬁrst i − 1 elements of the
+ * the locally saved 鈥渓atest鈥�, by comparing the 铿乺st i 鈭� 1 elements of the
  * vector. This means that the message was based on a combination of assignments
  * which was already abandoned and thismessage is discarded. Only when the
- * message’s time-stamp in the ﬁrst i − 1 elemental is equal or greater than the
- * locally saved ”best” time-stamp is the message processed further. The
- * vector’s counters might appear to require a lot of space, as the number of
+ * message鈥檚 time-stamp in the 铿乺st i 鈭� 1 elemental is equal or greater than the
+ * locally saved 鈥漛est鈥� time-stamp is the message processed further. The
+ * vector鈥檚 counters might appear to require a lot of space, as the number of
  * assignments can grow exponentially in the number of agents. However, if the
  * agent (Ai) resets its local counter to zero each time the assignments of
  * higher priority agents are altered, the counters will remain small (log of
@@ -68,7 +68,7 @@ public class TimeStamp implements Serializable, DeepCopyable {
      * @param a
      */
     public TimeStamp(SimpleAgent a) {
-        this.id = new int[a.getNumberOfVariables()];
+        this.id = new int[a.getNumberOfAgents()];
         this.usingAgentId = a.getId();
     }
 

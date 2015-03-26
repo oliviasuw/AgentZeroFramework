@@ -72,7 +72,7 @@ public class DefaultMessageDelayer implements MessageDelayer {
     @Override
     public void initialize(Execution ex) {
         System.out.println("initializing message delayer... delaying on " + type );
-        int n = ex.getGlobalProblem().getNumberOfVariables();
+        int n = ex.getGlobalProblem().getNumberOfAgents();
         previousTime = new long[n][n];
         rnd = new Random(seed);
     }

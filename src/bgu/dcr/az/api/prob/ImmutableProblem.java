@@ -24,27 +24,6 @@ public interface ImmutableProblem {
     ProblemType type();
 
     /**
-     *
-     * @param var1
-     * @param val1
-     * @param var2
-     * @param val2
-     * @return the cost of assigning var1=val1 when var2=val2
-     */
-    int getConstraintCost(int var1, int val1, int var2, int val2);
-
-    /**
-     *
-     * @param var1
-     * @param val1
-     * @return the cost of assigning var1=val1
-     */
-//    default int getConstraintCost(int var1, int val1) {
-//        return getConstraintCost(var1, val1, var1, val1);
-//    }
-    int getConstraintCost(int var1, int val1);
-
-    /**
      * return the cost of the k-ary constraint represented by the given
      * assignment
      *
@@ -52,6 +31,38 @@ public interface ImmutableProblem {
      * @return
      */
     int getConstraintCost(Assignment ass);
+    
+    /****************** Agent layer start ******************/
+    int getNumberOfAgents();
+
+    ImmutableSet<Integer> getAgentDomainOf(int agent);
+
+    int getAgentDomainSize(int agent);
+
+    Set<Integer> getAgentNeighbors(int agent);
+
+    boolean isAgentConstrained(int agent1, int agent2);
+    
+    /**
+    *
+    * @param var1
+    * @param val1
+    * @param var2
+    * @param val2
+    * @return the cost of assigning var1=val1 when var2=val2
+    */
+   int getAgentConstraintCost(int var1, int val1, int var2, int val2);
+
+   /**
+    *
+    * @param var1
+    * @param val1
+    * @return the cost of assigning var1=val1
+    */
+   int getAgentConstraintCost(int var1, int val1);
+    /****************** Agent layer end ******************/
+    
+    /****************** Variable layer start ******************/
 
     /**
      * return the domain of the given variable
@@ -59,7 +70,7 @@ public interface ImmutableProblem {
      * @param var
      * @return
      */
-    ImmutableSet<Integer> getDomainOf(int var);
+    ImmutableSet<Integer> getVarDomainOf(int var);
 
     /**
      * return the domain size of the variable var
@@ -67,31 +78,56 @@ public interface ImmutableProblem {
      * @param var
      * @return
      */
-    int getDomainSize(int var);
-
-    /**
-     * @return this problem metadata
-     */
-    HashMap<String, Object> getMetadata();
+    int getVarDomainSize(int var);
 
     /**
      * @param var
      * @return all the variables that costrainted with the given var
      */
-    Set<Integer> getNeighbors(int var);
+    Set<Integer> getVarNeighbors(int var);
 
     /**
      * @return the number of variables defined in this problem
      */
-    int getNumberOfVariables();
-    
-    int getNumberOfAgents();
+    int getNumberOfVars();
     
     List<Integer> getVariables(int agentId);
- 
-    // Deleted by Olivia
-//    public ArrayList<Integer> getConstrainedVars(int src, int dest);
+    
+    /**
+     * @param var1
+     * @param var2
+     * @return true if there is a constraint between var1 and var2 operation
+     * cost: o(d^2)cc
+     */
+    boolean isVarConstrained(int var1, int var2);
+    
+    /**
+    *
+    * @param var1
+    * @param val1
+    * @param var2
+    * @param val2
+    * @return the cost of assigning var1=val1 when var2=val2
+    */
+   int getVarConstraintCost(int var1, int val1, int var2, int val2);
 
+   /**
+    *
+    * @param var1
+    * @param val1
+    * @return the cost of assigning var1=val1
+    */
+//   default int getConstraintCost(int var1, int val1) {
+//       return getConstraintCost(var1, val1, var1, val1);
+//   }
+   int getVarConstraintCost(int var1, int val1);
+    /****************** Variable layer end ******************/
+
+    
+    /**
+     * @return this problem metadata
+     */
+    HashMap<String, Object> getMetadata();
 
     /**
      * @param var1
@@ -103,15 +139,17 @@ public interface ImmutableProblem {
 //    default boolean isConsistent(int var1, int val1, int var2, int val2) {
 //        return getConstraintCost(var1, val1, var2, val2) == 0;
 //    }
-    boolean isConsistent(int var1, int val1, int var2, int val2);
+    boolean isVarConsistent(int var1, int val1, int var2, int val2);
+    
+	/**
+	 * @param src
+	 * @param dest
+	 * @return
+	 */
+	ArrayList<Integer> getConstrainedVars(int src, int dest);
 
-    /**
-     * @param var1
-     * @param var2
-     * @return true if there is a constraint between var1 and var2 operation
-     * cost: o(d^2)cc
-     */
-    boolean isConstrained(int var1, int var2);
+    // Deleted by Olivia
+//  public ArrayList<Integer> getConstrainedVars(int src, int dest);
 
     /**
      * return the cost of the given assignment (taking into consideration all
@@ -122,11 +160,5 @@ public interface ImmutableProblem {
      */
     int calculateCost(Assignment a);
 
-	/**
-	 * @param src
-	 * @param dest
-	 * @return
-	 */
-	ArrayList<Integer> getConstrainedVars(int src, int dest);
 
 }

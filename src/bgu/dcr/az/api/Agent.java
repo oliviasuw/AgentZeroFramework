@@ -18,6 +18,7 @@ import bgu.dcr.az.api.exen.escan.VariableMetadata;
 import bgu.dcr.az.api.exp.UnsupportedMessageException;
 import bgu.dcr.az.api.prob.ConstraintCheckResult;
 import bgu.dcr.az.api.tools.Assignment;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -241,10 +242,18 @@ public abstract class Agent extends Agt0DSL {
     }
 
     /**
-     * @return set of variables that are constrainted with this agent variable
+     * @return set of variables that are constrainted with this variable
      */
-    public Set<Integer> getNeighbors() {
-        return prob.getNeighbors(getId());
+    public Set<Integer> getVarNeighbors() {
+        return prob.getVarNeighbors(getId());
+    }
+    
+    // Added for multi-vars per agent
+    /**
+     * @return set of agents that are constrainted with this agent
+     */
+    public Set<Integer> getAgentNeighbors() {
+        return prob.getAgentNeighbors(getId());
     }
 
     /**
@@ -294,7 +303,8 @@ public abstract class Agent extends Agt0DSL {
 
         Method mtd = msgToMethod.get(msg.getName());
         if (mtd == null) {
-            throw new UnsupportedMessageException("no method to handle message: '" + msg.getName() + "' was found (use @WhenReceived on PUBLIC functions only)");
+            throw new UnsupportedMessageException("no method to handle message: '" + msg.getName() + "'"
+            		+ " was found (use @WhenReceived on PUBLIC functions only)");
         }
         try {
             mtd.invoke(this, msg.getArgs());
@@ -309,7 +319,8 @@ public abstract class Agent extends Agt0DSL {
             throw new InternalErrorException("internal error while processing message: '" + msg.getName() + "' in agent " + getId(), e);
         } catch (InvocationTargetException e) {
             //e.printStackTrace();
-            throw new InternalErrorException("internal error while processing message: '" + msg.getName() + "' in agent " + getId() + ": " + e.getCause().getMessage() + " (see cause)", e.getCause());
+            throw new InternalErrorException("internal error while processing message: '" + msg.getName() + "' in agent " 
+            + getId() + ": " + e.getCause().getMessage() + " (see cause)", e.getCause());
         }
     }
 
@@ -500,7 +511,7 @@ public abstract class Agent extends Agt0DSL {
      * variable arranger that can change the last agent's id
      */
     protected boolean isLastAgent() {
-        return this.getId() + 1 == getNumberOfVariables();
+        return this.getId() + 1 == getNumberOfVars();
     }
 
     /**
@@ -522,8 +533,29 @@ public abstract class Agent extends Agt0DSL {
      * @return the cost of assigning var1<-val1 while var2=val2 in the current
      * problem
      */
-    public int getConstraintCost(int var1, int val1, int var2, int val2) {
-        return getProblem().getConstraintCost(var1, val1, var2, val2);
+    public int getVarConstraintCost(int var1, int val1, int var2, int val2) {
+        return getProblem().getVarConstraintCost(var1, val1, var2, val2);
+    }
+
+    /**
+     * @param agent1
+     * @param val1
+     * @return the unary cost of assigning agent1<-val1 in the current problem
+     */
+    public int getAgentConstraintCost(int agent1, int val1) {
+        return getProblem().getAgentConstraintCost(agent1, val1);
+    }
+    
+    /**
+     * @param agent1
+     * @param val1
+     * @param agent2
+     * @param val2
+     * @return the cost of assigning agent1<-val1 while agent2=val2 in the current
+     * problem
+     */
+    public int getAgentConstraintCost(int agent1, int val1, int agent2, int val2) {
+        return getProblem().getAgentConstraintCost(agent1, val1, agent2, val2);
     }
 
     /**
@@ -531,23 +563,36 @@ public abstract class Agent extends Agt0DSL {
      * @param val1
      * @return the unary cost of assigning var1<-val1 in the current problem
      */
-    public int getConstraintCost(int var1, int val1) {
-        return getProblem().getConstraintCost(var1, val1);
+    public int getVarConstraintCost(int var1, int val1) {
+        return getProblem().getVarConstraintCost(var1, val1);
     }
 
-    /**
+    /**public int getNumberOfVariables()
      * @return the number of variable in the current problem
      */
-    public int getNumberOfVariables() {
-        return getProblem().getNumberOfVariables();
+    // temperally modified the method name to check all situation: whether really getNumberOfVariables or shoudl be getNumberOfAgents
+    public int getNumberOfVars() {
+        return getProblem().getNumberOfVars();
+    }
+    
+    public int getNumberOfAgents() {
+        return getProblem().getNumberOfAgents();
     }
 
     /**
      * @param var
      * @return the domain of some variable in the current problem
      */
-    public ImmutableSet<Integer> getDomainOf(int var) {
-        return getProblem().getDomainOf(var);
+    public ImmutableSet<Integer> getVarDomainOf(int var) {
+        return getProblem().getVarDomainOf(var);
+    }
+    
+    /**
+     * @param agent
+     * @return the domain of some agent in the current problem
+     */
+    public ImmutableSet<Integer> getAgentDomainOf(int agent) {
+        return getProblem().getAgentDomainOf(agent);
     }
 
     /**
@@ -555,8 +600,12 @@ public abstract class Agent extends Agt0DSL {
      * change your domain- copy this set and then change your copy :
      * HashSet<Integer> currentDomain = new HashSet<Integer>(getDomain());
      */
-    public ImmutableSet<Integer> getDomain() {
-        return getProblem().getDomainOf(getId());
+    public ImmutableSet<Integer> getVarDomain() {
+        return getProblem().getVarDomainOf(getId());
+    }
+    
+    public ImmutableSet<Integer> getAgentDomain() {
+        return getProblem().getAgentDomainOf(getId());
     }
 
     /**
@@ -564,8 +613,12 @@ public abstract class Agent extends Agt0DSL {
      *
      * @return
      */
-    public int getDomainSize() {
-        return getDomainOf(getId()).size();
+    public int getVarDomainSize() {
+        return getVarDomainOf(getId()).size();
+    }
+    
+    public int getAgentDomainSize() {
+        return getAgentDomainOf(getId()).size();
     }
 
     /**
@@ -575,8 +628,8 @@ public abstract class Agent extends Agt0DSL {
      * in domainOf[var1] and val2 in domainOf[var2] where
      * getConstraintCost(val1, var1, var2, val2) != 0
      */
-    public boolean isConstrained(int var1, int var2) {
-        return getProblem().isConstrained(var1, var2);
+    public boolean isVarConstrained(int var1, int var2) {
+        return getProblem().isVarConstrained(var1, var2);
     }
 
     /**
@@ -714,7 +767,7 @@ public abstract class Agent extends Agt0DSL {
     	if(debug){
     		System.out.println("send SYS_TERMINATION in agent " + getId());
     	}
-        send(SYS_TERMINATION_MESSAGE).toAll(range(0, getNumberOfVariables() - 1));
+        send(SYS_TERMINATION_MESSAGE).toAll(range(0, getNumberOfAgents() - 1));
     }
 
     /**
@@ -798,7 +851,8 @@ public abstract class Agent extends Agt0DSL {
 
         public void setMailGroupKey(String mailGroupKey) {
             if (numberOfSetIdCalls != 0) {
-                throw new InternalErrorException("cannot call to setMailGroupKey after calling setId - you must first change the mail group key and then the id");
+                throw new InternalErrorException("cannot call to setMailGroupKey after calling setId"
+                		+ " - you must first change the mail group key and then the id");
             }
 
             this.mailGroupKey = mailGroupKey;
@@ -922,26 +976,26 @@ public abstract class Agent extends Agt0DSL {
         }
 
         @Override
-        public int getNumberOfVariables() {
-            return pops.exec.getGlobalProblem().getNumberOfVariables();
+        public int getNumberOfVars() {
+            return pops.exec.getGlobalProblem().getNumberOfVars();
         }
 
         @Override
-        public ImmutableSet<Integer> getDomainOf(int var) {
-            return pops.exec.getGlobalProblem().getDomainOf(var);
+        public ImmutableSet<Integer> getVarDomainOf(int var) {
+            return pops.exec.getGlobalProblem().getVarDomainOf(var);
         }
 
         @Override
-        public int getConstraintCost(int var1, int val1) {
-            pops.exec.getGlobalProblem().getConstraintCost(getAgentId(), var1, val1, queryTemp);
+        public int getVarConstraintCost(int var1, int val1) {
+            pops.exec.getGlobalProblem().getVarConstraintCost(getAgentId(), var1, val1, queryTemp);
 
             cc += queryTemp.getCheckCost();
             return queryTemp.getCost();
         }
 
         @Override
-        public int getConstraintCost(int var1, int val1, int var2, int val2) {
-            pops.exec.getGlobalProblem().getConstraintCost(getAgentId(), var1, val1, var2, val2, queryTemp);
+        public int getVarConstraintCost(int var1, int val1, int var2, int val2) {
+            pops.exec.getGlobalProblem().getVarConstraintCost(getAgentId(), var1, val1, var2, val2, queryTemp);
 
             cc += queryTemp.getCheckCost();
             return queryTemp.getCost();
@@ -953,8 +1007,8 @@ public abstract class Agent extends Agt0DSL {
         }
 
         @Override
-        public int getDomainSize(int var) {
-            return pops.exec.getGlobalProblem().getDomainSize(var);
+        public int getVarDomainSize(int var) {
+            return pops.exec.getGlobalProblem().getVarDomainSize(var);
         }
 
         @Override
@@ -963,21 +1017,21 @@ public abstract class Agent extends Agt0DSL {
         }
 
         @Override
-        public Set<Integer> getNeighbors(int var) {
-            return pops.exec.getGlobalProblem().getNeighbors(var);
+        public Set<Integer> getVarNeighbors(int var) {
+            return pops.exec.getGlobalProblem().getVarNeighbors(var);
         }
 
         @Override
-        public boolean isConsistent(int var1, int val1, int var2, int val2) {
-            pops.exec.getGlobalProblem().getConstraintCost(getAgentId(), var1, val1, var2, val2, queryTemp);
+        public boolean isVarConsistent(int var1, int val1, int var2, int val2) {
+            pops.exec.getGlobalProblem().getVarConstraintCost(getAgentId(), var1, val1, var2, val2, queryTemp);
 
             cc += queryTemp.getCheckCost();
             return queryTemp.getCost() == 0;
         }
 
         @Override
-        public boolean isConstrained(int var1, int var2) {
-            return pops.exec.getGlobalProblem().isConstrained(var1, var2);
+        public boolean isVarConstrained(int var1, int var2) {
+            return pops.exec.getGlobalProblem().isVarConstrained(var1, var2);
         }
 
         /**
@@ -990,7 +1044,7 @@ public abstract class Agent extends Agt0DSL {
 
         @Override
         public int getConstraintCost(Assignment ass) {
-            pops.exec.getGlobalProblem().getConstraintCost(getAgentId(), ass, queryTemp);
+            pops.exec.getGlobalProblem().getVarConstraintCost(getAgentId(), ass, queryTemp);
 
             cc += queryTemp.getCheckCost();
             return queryTemp.getCost();
@@ -1017,5 +1071,55 @@ public abstract class Agent extends Agt0DSL {
         public List<Integer> getVariables(int agentId) {
             return pops.exec.getGlobalProblem().getVariables(agentId); //To change body of generated methods, choose Tools | Templates.
         }
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainOf(int)
+		 */
+		@Override
+		public ImmutableSet<Integer> getAgentDomainOf(int agent) {
+			return pops.exec.getGlobalProblem().getAgentDomainOf(agent);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainSize(int)
+		 */
+		@Override
+		public int getAgentDomainSize(int agent) {
+			return pops.exec.getGlobalProblem().getAgentDomainSize(agent);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentNeighbors(int)
+		 */
+		@Override
+		public Set<Integer> getAgentNeighbors(int agent) {
+			return pops.exec.getGlobalProblem().getAgentNeighbors(agent);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#isAgentConstrained(int, int)
+		 */
+		@Override
+		public boolean isAgentConstrained(int agent1, int agent2) {
+			return pops.exec.getGlobalProblem().isAgentConstrained(agent1, agent2);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentConstraintCost(int, int, int, int)
+		 */
+		@Override
+		public int getAgentConstraintCost(int agent1, int val1, int agent2, int val2) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getAgentConstraintCost(agent1, val1, agent2, val2);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentConstraintCost(int, int)
+		 */
+		@Override
+		public int getAgentConstraintCost(int agent1, int val1) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getAgentConstraintCost(agent1, val1);
+		}
     }
 }

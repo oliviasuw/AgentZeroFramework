@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Register(name = "VA_ProbGen")
 public class VA_multiVarsProbGen extends AbstractProblemGenerator {
@@ -27,7 +29,7 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
 	String fileName;
     protected HashMap<Integer, ArrayList<Integer>> agentVarMap; //For algorithm running, for multiple_VA, each agent has only one variable
     protected HashMap<Integer, ArrayList<Integer>> realAgentVarMap; //For multiple_VA, this is the map between real agent and variable
-	
+
     @Override
     public void generate(Problem p, Random rand) {
     	File dir = new File("problems");
@@ -36,7 +38,7 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
     	writeToFile();
     	BufferedReader reader = null;
     	boolean isInitialized = false;
-    	int agentsNo = 0;
+    	int agentNum = 0;  // In virtual agent approach, agentNum is equal to the number of variables
     	int domainSize = 0;
     	agentVarMap = new HashMap();
     	realAgentVarMap = new HashMap();
@@ -44,18 +46,18 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
     		reader = new BufferedReader(new FileReader(files[fileNo-1]));
     		String line = null;
     		int i = 0, j = 0;
-            List<Set<Integer>> domains = new ArrayList();
+                List<Set<Integer>> domains = new ArrayList();
     		while((line = reader.readLine())!=null){	
     			if(line.contains("VARIABLE")){
     				String[] tokStrings = line.split("\\s");
-    				agentsNo++;
+    				agentNum++;
     				domainSize = Integer.parseInt(tokStrings[4]);
     				Set<Integer> dom = new HashSet<Integer>(Agt0DSL.range(0, domainSize - 1));
-					domains.add(dom);
+			        domains.add(dom);
     				int varID = Integer.parseInt(tokStrings[1]);
     				int agentID = Integer.parseInt(tokStrings[2]);
     				
-    	            ArrayList<Integer> temp1 = new ArrayList<>();
+    	            ArrayList<Integer> temp1 = new ArrayList();
     	            temp1.add(varID);
     				agentVarMap.put(varID, temp1);
     				
@@ -69,7 +71,7 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
     			}
     			if(line.contains("CONSTRAINT")){
     				if(!isInitialized){
-    					p.initialize(ProblemType.DCOP, agentsNo, domains, ModelType.multiple_VA, 
+    					p.initialize(ProblemType.DCOP, agentNum, domains, ModelType.multiple_VA, 
     							agentVarMap, realAgentVarMap);
     					isInitialized = true;
     				}
@@ -80,22 +82,23 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
     			if(line.contains("F")){
     				String[] tokStrings = line.split("\\s");
 					if(i == j){
-				        p.setConstraintCost(i, Integer.parseInt(tokStrings[1]),
+				        p.setVarConstraintCost(i, Integer.parseInt(tokStrings[1]),
     						Integer.parseInt(tokStrings[3]));
 					}
 					else{
 					    //System.out.println("i = " + i + ", vi = "  + Integer.parseInt(tokStrings[1]) + ", j = " + j + ", vj = "  + Integer.parseInt(tokStrings[2]) +", cost: " + Integer.parseInt(tokStrings[3]));
-    				    p.setConstraintCost(i, Integer.parseInt(tokStrings[1]), j, Integer.parseInt(tokStrings[2]),
+    				    p.setVarConstraintCost(i, Integer.parseInt(tokStrings[1]), j, Integer.parseInt(tokStrings[2]),
     						Integer.parseInt(tokStrings[3]));
-    				    p.setConstraintCost(j, Integer.parseInt(tokStrings[2]), i, Integer.parseInt(tokStrings[1]),
+    				    p.setVarConstraintCost(j, Integer.parseInt(tokStrings[2]), i, Integer.parseInt(tokStrings[1]),
     						Integer.parseInt(tokStrings[3]));
 					}
 
     			}
     		}
-    	}catch (NumberFormatException | IOException exception){
-    		System.out.println(exception);
-    	}
+    		p.setupAgentNeighbors();
+    	}   catch (IOException ex) {
+                Logger.getLogger(VA_multiVarsProbGen.class.getName()).log(Level.SEVERE, null, ex);
+            }
     }
     
     private void writeToFile(){

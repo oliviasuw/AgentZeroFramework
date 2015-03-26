@@ -5,7 +5,6 @@ import bgu.dcr.az.api.agt.SimpleAgent;
 import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
 import bgu.dcr.az.api.tools.DFSPsaudoTree;
-import bgu.dcr.az.dev.modules.statiscollec.Counter;
 import bgu.dcr.az.dev.tools.AssignmentInfo;
 
 import java.io.File;
@@ -51,12 +50,12 @@ public class BnBAdoptAgent extends SimpleAgent {
                     }
                 }
                 ID = 0;
-                lbChildD = new int[tree.getChildren().size()][getDomainSize()];
-                LBD = new int[getDomainSize()];
-                ubChildD = new int[tree.getChildren().size()][getDomainSize()];
-                UBD = new int[getDomainSize()];
+                lbChildD = new int[tree.getChildren().size()][getAgentDomainSize()];
+                LBD = new int[getAgentDomainSize()];
+                ubChildD = new int[tree.getChildren().size()][getAgentDomainSize()];
+                UBD = new int[getAgentDomainSize()];
                 for(int i = 0; i < tree.getChildren().size(); i++){
-                    for(int j = 0; j < getDomainSize(); j++){
+                    for(int j = 0; j < getAgentDomainSize(); j++){
                         InitChild(i, j);
                     }
                 }
@@ -74,11 +73,11 @@ public class BnBAdoptAgent extends SimpleAgent {
     public Set<Integer> getSCA(){
         Set<Integer> _SCA = new HashSet<>();
         for(int ancestor : tree.getAncestors()){
-            if(getProblem().getNeighbors(getId()).contains(ancestor))
+            if(getProblem().getAgentNeighbors(getId()).contains(ancestor))
                 _SCA.add(ancestor);
             else{
                 for(int descendant : tree.getDescendants()){
-                    if(getProblem().getNeighbors(descendant).contains(ancestor)){
+                    if(getProblem().getAgentNeighbors(descendant).contains(ancestor)){
                         _SCA.add(ancestor);
                         break;
                     }
@@ -93,11 +92,11 @@ public class BnBAdoptAgent extends SimpleAgent {
         Set<Integer> _SCA = new HashSet<>();
         _SCA.add(getId());
         for(int ancestor : tree.getAncestors()){
-            if(getProblem().getNeighbors(id).contains(ancestor))
+            if(getProblem().getAgentNeighbors(id).contains(ancestor))
                 _SCA.add(ancestor);
             else{
                 for(int descendant : tree.getChildDescendants(id)){
-                    if(getProblem().getNeighbors(descendant).contains(ancestor)){
+                    if(getProblem().getAgentNeighbors(descendant).contains(ancestor)){
                         _SCA.add(ancestor);
                         break;
                     }
@@ -114,7 +113,7 @@ public class BnBAdoptAgent extends SimpleAgent {
 
     public void InitSelf(){
         int min = Integer.MAX_VALUE;
-        for(int value : getDomain()){
+        for(int value : getAgentDomain()){
             if(min > calcDelta(value) + sumlbORub(lbChildD, value)){
                 min = calcDelta(value) + sumlbORub(lbChildD, value);
                 d = value;
@@ -142,13 +141,13 @@ public class BnBAdoptAgent extends SimpleAgent {
             return 0;
         int delta = 0;
         for(int ancestor : SCA){
-            delta += getConstraintCost(getId(), val, ancestor, cpa.get(ancestor).getValue());
+            delta += getAgentConstraintCost(getId(), val, ancestor, cpa.get(ancestor).getValue());
         }
         return delta;
     }
 
     private void backtrack(){
-        for(int i = 0; i < getDomainSize(); i++) {
+        for(int i = 0; i < getAgentDomainSize(); i++) {
             LBD[i] = calcDelta(i) + sumlbORub(lbChildD, i);
             UBD[i] = positivInfinityPlus(calcDelta(i), sumlbORub(ubChildD, i));
         }
@@ -265,7 +264,7 @@ public class BnBAdoptAgent extends SimpleAgent {
         if(!isCompatible(_cpa, cpa)){
             for(int i = 0; i < tree.getChildren().size(); i++){
                 if(getSCA(tree.getChildren().get(i)).contains(p))
-                    for(int j = 0; j < getDomainSize(); j++){
+                    for(int j = 0; j < getAgentDomainSize(); j++){
                         InitChild(i, j);
                     }
             }
@@ -281,7 +280,7 @@ public class BnBAdoptAgent extends SimpleAgent {
         priorityMerge(cCPA, cpa);
         if(!isCompatible(_cpa, cpa)){
             for(int i = 0; i < tree.getChildren().size(); i++){
-                for(int j = 0; j < getDomainSize(); j++){
+                for(int j = 0; j < getAgentDomainSize(); j++){
                     HashMap<Integer, AssignmentInfo> tmpCPA = new HashMap<Integer, AssignmentInfo>();
                     for(Map.Entry<Integer, AssignmentInfo> entry : _cpa.entrySet()){
                         if(getSCA(tree.getChildren().get(i)).contains(entry.getKey()))

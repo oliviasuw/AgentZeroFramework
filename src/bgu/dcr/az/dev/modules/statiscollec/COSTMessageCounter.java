@@ -27,6 +27,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import confs.Counter;
+
 @Register(name = "COSTMessageCounter")
 public class COSTMessageCounter extends AbstractStatisticCollector<COSTMessageCounter.COSTMsgRecord> {
 

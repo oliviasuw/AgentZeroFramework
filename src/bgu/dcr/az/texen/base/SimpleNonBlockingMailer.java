@@ -33,7 +33,7 @@ public class SimpleNonBlockingMailer implements NonBlockingMailer {
             if (qs == null) {
                 mailBoxModifierKey.acquire();
                 if (!mailBoxes.containsKey(groupKey)) { //maybe someone already modified it..
-                    final int numberOfVariables = exec.getGlobalProblem().getNumberOfVariables();
+                    final int numberOfVariables = exec.getGlobalProblem().getNumberOfAgents();
                     qs = new MessageQueue[numberOfVariables];
                     for (int i = 0; i < numberOfVariables; i++) {
                         qs[i] = generateNewMessageQueue(i, groupKey);
@@ -55,7 +55,7 @@ public class SimpleNonBlockingMailer implements NonBlockingMailer {
     @Override
     public void broadcast(Message msg, String groupKey) {
         int sender = msg.getSender();
-        for (int i = 0; i < exec.getGlobalProblem().getNumberOfVariables(); i++) {
+        for (int i = 0; i < exec.getGlobalProblem().getNumberOfAgents(); i++) {
             if (i != sender) {
                 send(msg, i, groupKey);
             }
@@ -66,7 +66,7 @@ public class SimpleNonBlockingMailer implements NonBlockingMailer {
     public void broadcast(Message msg) {
         int sender = msg.getSender();
         for (String gkey : mailBoxes.keySet()) {
-            for (int i = 0; i < exec.getGlobalProblem().getNumberOfVariables(); i++) {
+            for (int i = 0; i < exec.getGlobalProblem().getNumberOfAgents(); i++) {
                 if (i != sender) {
                     send(msg, i, gkey);
                 }

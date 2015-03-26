@@ -24,7 +24,7 @@ public class SyncExecution extends AbstractExecution {
     
     public SyncExecution(Problem p, AlgorithmMetadata a, Test r, Experiment exp) {
         super(p, new SyncMailer(), a, r, exp);
-        handlingAgentRunners = new AgentRunner[p.getNumberOfVariables()];
+        handlingAgentRunners = new AgentRunner[p.getNumberOfAgents()];
     }
     
     @Override
@@ -32,7 +32,7 @@ public class SyncExecution extends AbstractExecution {
         DefaultSystemClock clock = new DefaultSystemClock();
         setSystemClock(clock);
         ((SyncMailer) getMailer()).setClock(clock);
-        final int numberOfVariables = getGlobalProblem().getNumberOfVariables();
+        final int numberOfVariables = getGlobalProblem().getNumberOfAgents();
         final int numberOfCores = Runtime.getRuntime().availableProcessors();
         final int numberOfAgentRunners = Math.min(numberOfCores, numberOfVariables);
 
