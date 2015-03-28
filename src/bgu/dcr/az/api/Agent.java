@@ -1110,7 +1110,9 @@ public abstract class Agent extends Agt0DSL {
 		@Override
 		public int getAgentConstraintCost(int agent1, int val1, int agent2, int val2) {
 			// TODO Auto-generated method stub
-			return pops.exec.getGlobalProblem().getAgentConstraintCost(agent1, val1, agent2, val2);
+			pops.exec.getGlobalProblem().getAgentConstraintCost(agent1, val1, agent2, val2, queryTemp);
+            cc += queryTemp.getCheckCost();
+            return queryTemp.getCost();
 		}
 
 		/* (non-Javadoc)
@@ -1119,7 +1121,55 @@ public abstract class Agent extends Agt0DSL {
 		@Override
 		public int getAgentConstraintCost(int agent1, int val1) {
 			// TODO Auto-generated method stub
-			return pops.exec.getGlobalProblem().getAgentConstraintCost(agent1, val1);
+			pops.exec.getGlobalProblem().getAgentConstraintCost(agent1, val1, queryTemp);
+            cc += queryTemp.getCheckCost();
+            return queryTemp.getCost();
 		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#setExternalVariables(int)
+		 */
+		@Override
+		public void setPrincipalVariables(int agentId, ArrayList<Integer> externalVars) {
+			// TODO Auto-generated method stub
+			pops.exec.getGlobalProblem().setPrincipalVariables(agentId, externalVars);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getExternalVariables(int)
+		 */
+		@Override
+		public List<Integer> getPrincipalVariables(int agentId) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getPrincipalVariables(agentId);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getPrincipalVarsHashValue(int, int)
+		 */
+		@Override
+		public int getPrincipalVarsHashValue(int agentID, int hashVal) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getPrincipalVarsHashValue(agentID, hashVal);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#hasAgentInitialized(int)
+		 */
+		@Override
+		public boolean hasAgentInitialized(int agentID) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().hasAgentInitialized(agentID);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#setAgentInitialized(int)
+		 */
+		@Override
+		public boolean setAgentInitialized(int agentID) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().setAgentInitialized(agentID);
+		}
+
     }
 }

@@ -4,7 +4,7 @@
    Date: Dec 21, 2014
    Time: 9:09:22 PM 
  */
-package bgu.dcr.az.dev.agents;
+package bgu.dcr.az.dev.constructs;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,9 +13,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 
+import bgu.dcr.az.api.Agent;
 import bgu.dcr.az.api.ds.ImmutableSet;
 import bgu.dcr.az.api.prob.ImmutableProblem;
 import bgu.dcr.az.api.tools.DFSPsaudoTree;
+import bgu.dcr.az.dev.agents.AC_BnBAdoptPlusAgent;
 
 public class ACConstruct {
 	
@@ -40,9 +42,9 @@ public class ACConstruct {
     public Vector<boolean[]> neighborsPruned;
     
     /* Stack records the projections that may needs to be undone*/
-    Integer[] ACRecordsProjectFromMe;  // AC_records   
-    Integer[] ACRecordsProjectToMe; // ACCsrc->self  In the implementation, is AC_accept_count
-    Double[][][] P_records; // Stack P
+    public Integer[] ACRecordsProjectFromMe;  // AC_records   
+    public Integer[] ACRecordsProjectToMe; // ACCsrc->self  In the implementation, is AC_accept_count
+    public Double[][][] P_records; // Stack P
 
 
     class Nogood{
@@ -69,9 +71,9 @@ public class ACConstruct {
     public double global_top;
     public double global_cPhi;
     
-    public ACConstruct(AC_BnBAdoptAgent agent){
+    public ACConstruct(Agent agent, DFSPsaudoTree tree){
 
-        depth = agent.tree.getDepth();
+        depth = tree.getDepth();
         agentID = agent.getId();
         
 //    	File file = new File("costs.txt");
@@ -85,18 +87,14 @@ public class ACConstruct {
 //			e1.printStackTrace();
 //		}
 		
-		
-		
         int domainSize = agent.getAgentDomain().size();
         domain = new Integer[domainSize];
         for(int i = 0; i < domainSize; i++){
         	domain[i] = i;  // The value is the index of the value in the domain
         }
         
-//        domain = (Integer[]) agent.getDomain().toArray();
-        
         myContribution = 0;
-        neighbors = agent.tree.getNeighbors();
+        neighbors = tree.getNeighbors();
         neighborsDomains = new Vector();
         neighborsPruned = new Vector();
         

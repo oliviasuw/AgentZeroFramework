@@ -57,7 +57,7 @@ public class FCSolver extends IterativeCSPSolver {
     protected void updateCurrentDomain(int i, Problem p) {
         LinkedList<Integer> cd = currentDomain.get(i);
         cd.clear();
-        for (int j = 0; j < p.getDomainSize(0); j++) {
+        for (int j = 0; j < p.getVarDomainSize(0); j++) {
             cd.add(j);
         }
 
@@ -73,7 +73,7 @@ public class FCSolver extends IterativeCSPSolver {
         past_fc = new ArrayList<LinkedList<Integer>>();
         future_fc = new ArrayList<LinkedList<Integer>>();
 
-        for (int i = 0; i < p.getNumberOfVariables(); i++) {
+        for (int i = 0; i < p.getNumberOfVars(); i++) {
             currentDomain.add(new LinkedList<Integer>());
             reductions.add(new Stack<HashSet<Integer>>());
             past_fc.add(new LinkedList<Integer>());
@@ -81,7 +81,7 @@ public class FCSolver extends IterativeCSPSolver {
         }
 
         for (LinkedList<Integer> cd : currentDomain) {
-            for (int i = 0; i < p.getDomainSize(0); i++) {
+            for (int i = 0; i < p.getVarDomainSize(0); i++) {
                 cd.addLast(i);
             }
         }
@@ -104,7 +104,7 @@ public class FCSolver extends IterativeCSPSolver {
 
 
             setConsistent(true);
-            for (int j = i + 1; j < p.getNumberOfVariables(); j++) {
+            for (int j = i + 1; j < p.getNumberOfVars(); j++) {
                 if (!isConsistent()) {
                     break;
                 }

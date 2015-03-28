@@ -38,8 +38,8 @@ public class UnstructuredDCOPGen extends AbstractProblemGenerator {
     @Override
     public void generate(Problem p, Random rand) {
         p.initialize(ProblemType.DCOP, n, new ImmutableSet<Integer>(Agt0DSL.range(0, d - 1)));
-        for (int i = 0; i < p.getNumberOfVariables(); i++) {
-            for (int j = 0; j < p.getNumberOfVariables(); j++) {
+        for (int i = 0; i < p.getNumberOfVars(); i++) {
+            for (int j = 0; j < p.getNumberOfVars(); j++) {
                 if (rand.nextDouble() < p1) {
                     buildConstraint(i, j, p, true, rand);
                 }
@@ -48,18 +48,18 @@ public class UnstructuredDCOPGen extends AbstractProblemGenerator {
     }
 
     protected void buildConstraint(int i, int j, Problem p, boolean sym, Random rand) {
-        for (int vi = 0; vi < p.getDomain().size(); vi++) {
-            for (int vj = 0; vj < p.getDomain().size(); vj++) {
+        for (int vi = 0; vi < p.getVarDomain().size(); vi++) {
+            for (int vj = 0; vj < p.getVarDomain().size(); vj++) {
                 if (i == j) {
                     continue;
                 }
                 final int cost1 = rand.nextInt(maxCost+ 1) ;
                 final int cost2 = rand.nextInt(maxCost+ 1) ;
-                p.setConstraintCost(i, vi, j, vj, cost1);
+                p.setVarConstraintCost(i, vi, j, vj, cost1);
                 if (sym) {
-                    p.setConstraintCost(j, vj, i, vi, cost1);
+                    p.setVarConstraintCost(j, vj, i, vi, cost1);
                 } else {
-                    p.setConstraintCost(j, vj, i, vi, cost2);
+                    p.setVarConstraintCost(j, vj, i, vi, cost2);
                 }
             }
         }

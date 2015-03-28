@@ -56,7 +56,7 @@ public abstract class IterativeCSPSolver {
                 i = unLabel(i, p);
             }
 
-            if (i >= p.getNumberOfVariables()) {
+            if (i >= p.getNumberOfVars()) {
                 stat = Status.solution;
             } else if (i == -1) {
                 stat = Status.imposible;
@@ -67,7 +67,7 @@ public abstract class IterativeCSPSolver {
     }
 
     protected boolean check(Problem p, int i, int vi, int j, int vj) {
-        return p.isConsistent(i, vi, j, vj);
+        return p.isVarConsistent(i, vi, j, vj);
     }
 
     protected void assign(int var, int val) {

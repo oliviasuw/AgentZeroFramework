@@ -1,29 +1,44 @@
 package bgu.dcr.az.dev.agents;
 
 import bgu.dcr.az.api.Continuation;
+import bgu.dcr.az.api.Message;
 import bgu.dcr.az.api.agt.SimpleAgent;
 import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
+import bgu.dcr.az.api.exen.MessageQueue;
 import bgu.dcr.az.api.tools.DFSPsaudoTree;
 import bgu.dcr.az.dev.tools.AssignmentInfo;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
- * Created by Chris Qin on 10/9/2014.
+ * Created by ChrisQin on 10/9/2014.
+ * @modified by Olivia
+ * 1. support unary costs
+ * 2. Suitable for VA, PC, OC methods
  */
-@Algorithm(name="BnBAdoptWithUnary", useIdleDetector=true)
-public class BnBAdopt extends SimpleAgent {
-	
-	boolean debug = false;
+@Algorithm(name="BnBAdoptPlusAgent", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
+public class BnBAdoptPlusAgent extends SimpleAgent {
 
-    HashMap<Integer, AssignmentInfo> cpa = new HashMap<>();
+	boolean debug = true;
+    /** Structures for BnB-ADOPT+ only **/
+    boolean PlusOn = true;
+    // key: child/pseudochild ID; value: lastSentVALUE
+    HashMap<Integer, Integer> lastSentVALUEs = new HashMap();
+    // key: parent ID; value: lastSentCOST
+    HashMap<Integer, AssignmentInfo> lastSentCPA = new HashMap();
+    boolean cpaChanged = false;
+    int lastSentLB = -1;
+    int lastSentUB = Integer.MAX_VALUE;
+    boolean myThReq = false;
+    // Key: child/pseudochild ID; value: thReq
+    HashMap<Integer, Boolean> receivedThReqs = new HashMap();
+
+    HashMap<Integer, AssignmentInfo> cpa = new HashMap();
     private int ID;
     private int[][] lbChildD;
     private int[] LBD;
@@ -31,10 +46,11 @@ public class BnBAdopt extends SimpleAgent {
     private int[][] ubChildD;
     private int[] UBD;
     private int UB;
-    private Set<Integer> SCA = new HashSet<>();
+    private Set<Integer> SCA = new HashSet();
     private int d;
     private int TH;
     DFSPsaudoTree tree;
+    private int terminateValue = 0;
 
     @Override
     public void start() {
@@ -45,6 +61,7 @@ public class BnBAdopt extends SimpleAgent {
             public void doContinue () {
                 if(!tree.isRoot()){
                     SCA = getSCA();
+                    //System.out.println("I am " + getId() + ", SCA: " + SCA);
                     for(int ancestor : SCA){
                         cpa.put(ancestor, new AssignmentInfo(0, 0));
                     }
@@ -61,6 +78,7 @@ public class BnBAdopt extends SimpleAgent {
                 }
                 InitSelf();
                 backtrack();
+
             }
         });
     }
@@ -70,8 +88,9 @@ public class BnBAdopt extends SimpleAgent {
         backtrack();
     }
 
+    //get the SCA of a child
     public Set<Integer> getSCA(){
-        Set<Integer> _SCA = new HashSet<>();
+        Set<Integer> _SCA = new HashSet();
         for(int ancestor : tree.getAncestors()){
             if(getProblem().getAgentNeighbors(getId()).contains(ancestor))
                 _SCA.add(ancestor);
@@ -89,7 +108,7 @@ public class BnBAdopt extends SimpleAgent {
     }
 
     public Set<Integer> getSCA(int id){
-        Set<Integer> _SCA = new HashSet<>();
+        Set<Integer> _SCA = new HashSet();
         _SCA.add(getId());
         for(int ancestor : tree.getAncestors()){
             if(getProblem().getAgentNeighbors(id).contains(ancestor))
@@ -103,11 +122,12 @@ public class BnBAdopt extends SimpleAgent {
                 }
             }
         }
+        //System.out.println("id : " + id + ", SCA: " + _SCA);
         return _SCA;
     }
 
     public void InitChild(int child, int val){
-        lbChildD[child][val] = 0;
+        lbChildD[child][val] = 0;       //should have been heuristic
         ubChildD[child][val] = Integer.MAX_VALUE;
     }
 
@@ -121,10 +141,13 @@ public class BnBAdopt extends SimpleAgent {
         }
         ID++;
         TH = Integer.MAX_VALUE;
-    }
+        if(PlusOn){
+			myThReq = true;  // Always false to disable this function by Suwen
+			}
+}
 
     public int positivInfinityPlus(int a, int b){
-        if(a + b < 0)
+        if(a + b < 0)   //overflow
             return Integer.MAX_VALUE;
         return a + b;
     }
@@ -138,27 +161,38 @@ public class BnBAdopt extends SimpleAgent {
 
     public int calcDelta(int val){
         int delta = 0;
+        
         //Olivia added
         // unary cost
         delta += getAgentConstraintCost(getId(), val);
+        
         if(tree.isRoot())
             return delta;
         
-        // binary cost
         for(int ancestor : SCA){
             delta += getAgentConstraintCost(getId(), val, ancestor, cpa.get(ancestor).getValue());
         }
+        //System.out.println("sca: " + SCA + " delta : " + delta);
         return delta;
     }
 
     private void backtrack(){
-        for(int i = 0; i < getAgentDomainSize(); i++) {
+    	//debug
+//    	MessageQueue tmp = getMailbox();
+//    	PriorityBlockingQueue<Message> tmpDQ = tmp.getDelayedQueue();
+//    	System.out.println("Delayed Queue of Agent[" + getId() +"] :    "+ tmpDQ.toString());
+//    	for(Message msg : tmpDQ){
+//    		long msgtime = ((Long) msg.getMetadata().get("nccc")).intValue();
+//    		System.out.println("Msg Time: " + msgtime);
+//    	}
+    	
+        for(int i = 0; i < getAgentDomainSize(); i++){
             LBD[i] = calcDelta(i) + sumlbORub(lbChildD, i);
             UBD[i] = positivInfinityPlus(calcDelta(i), sumlbORub(ubChildD, i));
         }
         LB = findMinimum(LBD, 1, 0);
         UB = findMinimum(UBD, 1, 0);
-//        System.out.println("I am " + getId() + ", LB=" + LB + ", UB=" + UB);
+
 
         if(LBD[d] >= min(TH, UB)){
             d = findMinimum(LBD, 2, d);
@@ -167,8 +201,10 @@ public class BnBAdopt extends SimpleAgent {
         if((tree.isRoot() && UB == LB)){
             for(int child : tree.getChildren()){
                 send("TERMINATE").to(child);
+                if(debug) {
+                	System.out.println("#TERMINATE# from " + getId() +" to " + child);
+                }
             }
-            
             File file = new File("statistics.txt");
             try {
                 FileWriter fileWriter = new FileWriter(file, true);
@@ -177,41 +213,74 @@ public class BnBAdopt extends SimpleAgent {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            
             finishWithCost(UB);
             return;
         }
-
-        for(int child : tree.getChildren()){
-            send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
-            		+ lbChildD[tree.getChildren().indexOf(child)][d]).to(child);
-            //Debug
-            if(debug){
-            	System.out.println("VALUE: " + getId() +
-            			" [" + d + "] to " + child);
-            }
-        }
-
         
-        for(int pseudoChild : tree.getPsaudoChildren()){
-        	send("VALUE", getId(), d, ID, Integer.MAX_VALUE).to(pseudoChild);            
-            //Debug
-            if(debug){
-            	System.out.println("VALUE: " + getId() +
-            			" [" + d + "] to " + pseudoChild);
+        for(int child : tree.getChildren()){
+            if(PlusOn) {
+                if(!lastSentVALUEs.containsKey(child) || lastSentVALUEs.get(child) != d
+                		|| (receivedThReqs.containsKey(child) && receivedThReqs.get(child))){
+                    send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
+                            + lbChildD[tree.getChildren().indexOf(child)][d]).to(child);
+                    receivedThReqs.put(child, false);
+                    if(debug){
+                    	System.out.println("#VALUE# from [" + getId() + "] to [" 
+                    + child + "] [d: " + d +"] [ID: " + ID +"]");
+                    }
+                }
+                lastSentVALUEs.put(child, d);
+                
+            }
+            else {
+                send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
+                        + lbChildD[tree.getChildren().indexOf(child)][d]).to(child);
+                
             }
 
-        	
         }
-                   
-        if(!tree.isRoot()){
-        	send("COST", getId(), cpa, LB, UB).to(tree.getParent());        
-            //Debug
-            if(debug){
-            	System.out.println("COST: " + getId() +
-            			" [" + d + "] to " + tree.getParent());
+        for(int pseudoChild : tree.getPsaudoChildren()){
+            if(PlusOn){
+                if(!lastSentVALUEs.containsKey(pseudoChild) || lastSentVALUEs.get(pseudoChild) != d
+                		|| (receivedThReqs.containsKey(pseudoChild) &&  receivedThReqs.get(pseudoChild))){
+                    send("VALUE", getId(), d, ID, Integer.MAX_VALUE).to(pseudoChild);
+                    receivedThReqs.put(pseudoChild, false);
+                    if(debug){
+                    	System.out.println("#VALUE# from [" + getId() + "] to [" 
+                    + pseudoChild + "] [d: " + d +"] [ID: " + ID +"]");
+                    }
+                }
+                lastSentVALUEs.put(pseudoChild, d);
+            }
+            else{
+                send("VALUE", getId(), d, ID, Integer.MAX_VALUE).to(pseudoChild);
             }
         }
+
+        if(!tree.isRoot()){
+            if(PlusOn){
+                if(lastSentCPA.isEmpty()
+                        || lastSentLB != LB
+                        || lastSentUB != UB
+                        || !lastSentCPA.equals(cpa)
+                        || cpaChanged){
+                    cpaChanged = false;
+                    send("COST", getId(), cpa, LB, UB, myThReq).to(tree.getParent());
+                    myThReq = false;
+                    if(debug){
+                    	System.out.println("#COST# from [" + getId() + "] to [" + tree.getParent()
+                    			+"] [LB: " + LB +"] [UB: " + UB +"]");
+                    }
+                }
+                lastSentCPA = cpa;
+                lastSentLB = LB;
+                lastSentUB = UB;
+            }
+            else{
+                send("COST", getId(), cpa, LB, UB).to(tree.getParent());
+            }
+        }
+
     }
 
     private int findMinimum(int[] array, int flag, int initValue){     //flag = 1, return minumum,  else, return minimum index
@@ -230,7 +299,7 @@ public class BnBAdopt extends SimpleAgent {
     }
 
     public HashMap<Integer, AssignmentInfo> copyCPA(HashMap<Integer, AssignmentInfo> cpa){
-        HashMap<Integer, AssignmentInfo> _cpaHashMap = new HashMap<>();
+        HashMap<Integer, AssignmentInfo> _cpaHashMap = new HashMap();
         for(Map.Entry<Integer, AssignmentInfo> entry : cpa.entrySet()){
             _cpaHashMap.put(entry.getKey(), new AssignmentInfo(entry.getValue().getValue(), entry.getValue().getID()));
         }
@@ -239,23 +308,40 @@ public class BnBAdopt extends SimpleAgent {
 
     public void priorityMerge(int p, int dp, int IDp, HashMap<Integer, AssignmentInfo> _cpa) {
         if(_cpa.containsKey(p) && IDp > _cpa.get(p).getID()){
+            // BnB-ADOPT+ only
+            if(PlusOn){
+                if(_cpa.get(p).getValue() != dp){
+                    this.cpaChanged = true;
+                }
+            }
             _cpa.remove(p);
             _cpa.put(p, new AssignmentInfo(dp, IDp));
         }
     }
 
-    public void priorityMerge(HashMap<Integer, AssignmentInfo> cpa1, HashMap<Integer, AssignmentInfo> _cpa) {
+    public void priorityMerge(HashMap<Integer, AssignmentInfo> cpa1, HashMap<Integer, 
+	AssignmentInfo> _cpa) {
         for(Map.Entry<Integer, AssignmentInfo> entry : cpa1.entrySet()){
-            if(_cpa.containsKey(entry.getKey()) && entry.getValue().getID() > _cpa.get(entry.getKey()).getID()){
+            if(_cpa.containsKey(entry.getKey()) && entry.getValue().getID() > 
+			_cpa.get(entry.getKey()).getID()){
+                // BnB-ADOPT+ only
+                if(PlusOn){
+                    if(_cpa.get(entry.getKey()).getValue() != entry.getValue().getValue()){
+                        this.cpaChanged = true;
+                    }
+                }
                 _cpa.remove(entry.getKey());
-                _cpa.put(entry.getKey(), new AssignmentInfo(entry.getValue().getValue(), entry.getValue().getID()));
+                _cpa.put(entry.getKey(), new AssignmentInfo(entry.getValue().getValue(), 
+				entry.getValue().getID()));
             }
         }
     }
 
-    public boolean isCompatible(HashMap<Integer, AssignmentInfo> cpa1, HashMap<Integer, AssignmentInfo> _cpa){
+    public boolean isCompatible(HashMap<Integer, AssignmentInfo> cpa1, HashMap<Integer, 
+	AssignmentInfo> _cpa){
         for(Map.Entry<Integer, AssignmentInfo> entry : cpa1.entrySet()){
-            if(_cpa.containsKey(entry.getKey()) && entry.getValue().getValue() != _cpa.get(entry.getKey()).getValue()){
+            if(_cpa.containsKey(entry.getKey()) && entry.getValue().getValue() != 
+			_cpa.get(entry.getKey()).getValue()){
                 return false;
             }
         }
@@ -268,17 +354,17 @@ public class BnBAdopt extends SimpleAgent {
     		System.out.println("*Processing VALUE* [" + getId() + "] receive from ["  + p + 
     				"] ID = " + IDp + " d = " + dp);
     	}
-    	
-    	if(getId() ==  2){
-    		System.out.print("test");
-    	}
-    	
+        //System.out.println("I am " + getId() + "VALUE received: " + "p = " + p + " dp = " + dp + " IDp = " + IDp + " THp = " + THp + ", mycpa: " + print(cpa));
         HashMap<Integer, AssignmentInfo> _cpa = copyCPA(cpa);
         priorityMerge(p,  dp, IDp, cpa);
+        //System.out.println("_cpa : " + print(_cpa) + ", cpa: " + print(cpa));
         if(!isCompatible(_cpa, cpa)){
+            //System.out.println("true1");
             for(int i = 0; i < tree.getChildren().size(); i++){
+                //System.out.println("child: " + tree.getChildren().get(i) + ", CHILDSCA: " + getSCA(tree.getChildren().get(i)));
                 if(getSCA(tree.getChildren().get(i)).contains(p))
                     for(int j = 0; j < getAgentDomainSize(); j++){
+                        //System.out.println("true2");
                         InitChild(i, j);
                     }
             }
@@ -289,24 +375,28 @@ public class BnBAdopt extends SimpleAgent {
     }
 
     @WhenReceived("COST")
-    public void handleCOST(int c, HashMap<Integer, AssignmentInfo>cCPA, int LBc, int UBc){
+    public void handleCOST(int c, HashMap<Integer, AssignmentInfo>cCPA, int LBc, int UBc, boolean thReq){
     	if(debug){
     		System.out.println("*Processing COST* [" + getId() + "] receive from ["  + c + 
     				"] LBc = " + LBc + " UBc = " + UBc);
     	}
-    	if(debug && getId() == 2 && LBc==2493){
-    		System.out.println("test");
-    	}
-    	
-    	HashMap<Integer, AssignmentInfo> _cpa = copyCPA(cpa);
+        
+
+    	if(PlusOn){
+    		receivedThReqs.put(c, thReq);
+        }
+
+        HashMap<Integer, AssignmentInfo> _cpa = copyCPA(cpa);
         priorityMerge(cCPA, cpa);
         if(!isCompatible(_cpa, cpa)){
             for(int i = 0; i < tree.getChildren().size(); i++){
                 for(int j = 0; j < getAgentDomainSize(); j++){
-                    HashMap<Integer, AssignmentInfo> tmpCPA = new HashMap<Integer, AssignmentInfo>();
+                    HashMap<Integer, AssignmentInfo> tmpCPA = new HashMap<Integer, 
+					AssignmentInfo>();
                     for(Map.Entry<Integer, AssignmentInfo> entry : _cpa.entrySet()){
                         if(getSCA(tree.getChildren().get(i)).contains(entry.getKey()))
-                            tmpCPA.put(entry.getKey(), new AssignmentInfo(entry.getValue().getValue(), entry.getValue().getID()));
+                            tmpCPA.put(entry.getKey(), new AssignmentInfo(entry.getValue()
+							.getValue(), entry.getValue().getID()));
                     }
                     if(!isCompatible(tmpCPA, cpa))
                         InitChild(i, j);
@@ -321,20 +411,22 @@ public class BnBAdopt extends SimpleAgent {
             InitSelf();
     }
 
-    /*String print(HashMap<Integer, AssignmentInfo> cCPA){
+    String print(HashMap<Integer, AssignmentInfo> cCPA){
         String s = "";
         for (Map.Entry<Integer, AssignmentInfo> entry : cCPA.entrySet()) {
             s += entry.getKey() + ":" + entry.getValue().getValue() + ", ";
         }
         return s;
-    }*/
+    }
 
     @WhenReceived("TERMINATE")
     public void handleTERMINATE(){
         for(int child : tree.getChildren()){
             send("TERMINATE").to(child);
+            if(debug) {
+            	System.out.println("#TERMINATE# from " + getId() +" to " + child);
+            }
         }
-        finish();
+        finish(d);
     }
 }
-

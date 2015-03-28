@@ -205,4 +205,50 @@ public class PatchableAgentProblem implements PossibleProblem {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#setPrincipalVariables(int, java.util.ArrayList)
+	 */
+	@Override
+	public void setPrincipalVariables(int agentId,
+			ArrayList<Integer> principleVars) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getPrincipalVarsHashValue(int, int)
+	 */
+	@Override
+	public int getPrincipalVarsHashValue(int agentID, int hashVal) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getPrincipalVariables(int)
+	 */
+	@Override
+	public List<Integer> getPrincipalVariables(int agentId) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#hasAgentInitialized(int)
+	 */
+	@Override
+	public boolean hasAgentInitialized(int agentID) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#setAgentInitialized(int)
+	 */
+	@Override
+	public boolean setAgentInitialized(int agentID) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
 }

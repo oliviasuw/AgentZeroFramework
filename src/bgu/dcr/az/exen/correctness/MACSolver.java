@@ -39,13 +39,13 @@ public class MACSolver extends FCSolver {
     }
 
     void initializeAc4(Problem p) {
-        ac4_support = new HashSet[p.getNumberOfVariables()][p.getDomainSize(0)][p.getNumberOfVariables()];
-        ac4_supportList = new List[p.getNumberOfVariables()][p.getDomainSize(0)];
+        ac4_support = new HashSet[p.getNumberOfVars()][p.getVarDomainSize(0)][p.getNumberOfVars()];
+        ac4_supportList = new List[p.getNumberOfVars()][p.getVarDomainSize(0)];
         ac4_reductions = new ArrayList<Stack<HashSet<Integer>>>();
 
-        for (int i = 0; i < p.getNumberOfVariables(); i++) {
-            for (int k = 0; k < p.getDomainSize(0); k++) {
-                for (int j = 0; j < p.getNumberOfVariables(); j++) {
+        for (int i = 0; i < p.getNumberOfVars(); i++) {
+            for (int k = 0; k < p.getVarDomainSize(0); k++) {
+                for (int j = 0; j < p.getNumberOfVars(); j++) {
                     ac4_support[i][k][j] = new HashSet();
                 }
                 ac4_supportList[i][k] = new LinkedList();
@@ -53,11 +53,11 @@ public class MACSolver extends FCSolver {
             ac4_reductions.add(new Stack<HashSet<Integer>>());
         }
 
-        for (int i = 0; i < p.getNumberOfVariables(); i++) {
-            for (int j = i + 1; j < p.getNumberOfVariables(); j++) {
-                for (int vi = 0; vi < p.getDomainSize(0); vi++) {
-                    for (int vj = 0; vj < p.getDomainSize(0); vj++) {
-                        if (p.isConsistent(i, vi, j, vj)) {
+        for (int i = 0; i < p.getNumberOfVars(); i++) {
+            for (int j = i + 1; j < p.getNumberOfVars(); j++) {
+                for (int vi = 0; vi < p.getVarDomainSize(0); vi++) {
+                    for (int vj = 0; vj < p.getVarDomainSize(0); vj++) {
+                        if (p.isVarConsistent(i, vi, j, vj)) {
                             ac4_support[i][vi][j].add(vj);
                             ac4_supportList[i][vi].add(new SimpleEntry<Integer, Integer>(j, vj));
 
@@ -84,8 +84,8 @@ public class MACSolver extends FCSolver {
     Queue<SimpleEntry<Integer, Integer>> buildAc4Queue(Problem p, int subProblemPos) {
         Queue<SimpleEntry<Integer, Integer>> ret = new LinkedList<SimpleEntry<Integer, Integer>>();
 
-        for (int i = subProblemPos; i < p.getNumberOfVariables(); i++) {
-            for (int j = i + 1; j < p.getNumberOfVariables(); j++) {
+        for (int i = subProblemPos; i < p.getNumberOfVars(); i++) {
+            for (int j = i + 1; j < p.getNumberOfVars(); j++) {
                 for (Integer vi : currentDomain.get(i).toArray(new Integer[]{})) {
                     if (assignmentEmptyDomainOf(i, vi, j)) {
                         SimpleEntry<Integer, Integer> entry = new SimpleEntry<Integer, Integer>(i, vi);
@@ -102,7 +102,7 @@ public class MACSolver extends FCSolver {
     }
 
     void buildNewReductionSet(int fromVar, Problem p) {
-        for (int i = fromVar; i < p.getNumberOfVariables(); i++) {
+        for (int i = fromVar; i < p.getNumberOfVars(); i++) {
             ac4_reductions.get(i).push(new HashSet<Integer>());
         }
     }
@@ -145,7 +145,7 @@ public class MACSolver extends FCSolver {
     }
 
     void undoAc4Reductions(int fromVar, Problem p) {
-        for (int i = fromVar; i < p.getNumberOfVariables(); i++) {
+        for (int i = fromVar; i < p.getNumberOfVars(); i++) {
             HashSet<Integer> reduction = ac4_reductions.get(i).pop();
             for (Integer vi : reduction) {
                 currentDomain.get(i).add(vi);

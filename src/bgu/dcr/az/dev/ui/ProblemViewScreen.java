@@ -394,7 +394,7 @@ public class ProblemViewScreen extends javax.swing.JPanel implements ConstraintS
         for (int j = 0; j < domVars; j++) {
             model.setValueAt(j, j + 1, 0);
             for (int i = 0; i < domVars; i++) {
-                int cost = p.getConstraintCost(ai, i, aj, j);
+                int cost = p.getVarConstraintCost(ai, i, aj, j);
                 model.setValueAt(cost, j + 1, i + 1);
             }
         }

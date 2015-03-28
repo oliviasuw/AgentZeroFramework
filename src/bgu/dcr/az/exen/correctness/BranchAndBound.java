@@ -43,8 +43,8 @@ public class BranchAndBound {
     
     private static Assignment _solve(Problem p, int var, Assignment cpa, int ub) {
     	
-        if (p.getNumberOfVariables() == var) return cpa;
-        HashSet<Integer> cd = new HashSet<>(p.getDomainOf(var));
+        if (p.getNumberOfVars() == var) return cpa;
+        HashSet<Integer> cd = new HashSet<>(p.getVarDomainOf(var));
         Assignment bcpa = null;
         
         while (! cd.isEmpty()){

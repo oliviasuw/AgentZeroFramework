@@ -33,7 +33,7 @@ public class UnstructuredKaryADCOPGen extends AbstractProblemGenerator {
         for (int[] apr : agentPermutations) {
             for (int owner : apr) {
                 if (rand.nextDouble() < p1) {
-                    p.setConstraint(owner, new RandomKAryConstraint(n, d, maxCost, rand.nextInt(), apr));
+                    p.setVarConstraint(owner, new RandomKAryConstraint(n, d, maxCost, rand.nextInt(), apr));
                 }
             }
         }

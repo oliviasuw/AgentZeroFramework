@@ -19,7 +19,7 @@ public class ConnectedDCSPGen extends UnstructuredDCSPGen {
     public void generate(Problem p, Random rand) {
         super.generate(p, rand);
         while (true) {
-            boolean[] connections = new boolean[p.getNumberOfVariables()];
+            boolean[] connections = new boolean[p.getNumberOfVars()];
             calcConnectivity(p, 0, connections);
             if (allTrue(connections)) {
                 return;
@@ -39,16 +39,16 @@ public class ConnectedDCSPGen extends UnstructuredDCSPGen {
     }
 
     private void connect(int var1, int var2, Problem p, Random rnd) {
-        int val2 = rnd.nextInt(p.getDomainSize(var2));
-        int val1 = rnd.nextInt(p.getDomainSize(var1));
+        int val2 = rnd.nextInt(p.getVarDomainSize(var2));
+        int val1 = rnd.nextInt(p.getVarDomainSize(var1));
         int cost = 1;
-        p.setConstraintCost(var1, val1, var2, val2, cost);
-        p.setConstraintCost(var2, val2, var1, val1, cost);
+        p.setVarConstraintCost(var1, val1, var2, val2, cost);
+        p.setVarConstraintCost(var2, val2, var1, val1, cost);
     }
 
     private void calcConnectivity(Problem p, int root, boolean[] discovered) {
         discovered[root] = true;
-        for (int n : p.getNeighbors(root)) {
+        for (int n : p.getVarNeighbors(root)) {
 
             if (!discovered[n]) {
                 calcConnectivity(p, n, discovered);

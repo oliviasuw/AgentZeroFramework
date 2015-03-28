@@ -34,6 +34,12 @@ public interface ImmutableProblem {
     
     /****************** Agent layer start ******************/
     int getNumberOfAgents();
+    
+    void setPrincipalVariables(int agentId, ArrayList<Integer> principleVars);
+    
+    int getPrincipalVarsHashValue(int agentID, int hashVal);
+    
+    List<Integer> getPrincipalVariables(int agentId);
 
     ImmutableSet<Integer> getAgentDomainOf(int agent);
 
@@ -42,6 +48,9 @@ public interface ImmutableProblem {
     Set<Integer> getAgentNeighbors(int agent);
 
     boolean isAgentConstrained(int agent1, int agent2);
+    
+    boolean hasAgentInitialized(int agentID);
+    boolean setAgentInitialized(int agentID);
     
     /**
     *

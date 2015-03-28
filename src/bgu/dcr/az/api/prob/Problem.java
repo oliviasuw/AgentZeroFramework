@@ -44,8 +44,9 @@ public class Problem implements ImmutableProblem {
     protected HashMap<Integer, ArrayList<Integer>> realAgentVarMap = new HashMap(); 
     
     /**calculated**/
-    protected HashMap<Integer, ArrayList<Integer>> agentExternalVarMap = new HashMap();
-    protected HashMap<Integer, ArrayList<Integer>> agentLocalVarMap = new HashMap();
+    protected HashMap<Integer, ArrayList<Integer>> agentPrincipalVarMap = new HashMap();
+    protected HashMap<Integer, Boolean> agentHasInitialized = new HashMap();
+//    protected HashMap<Integer, ArrayList<Integer>> agentLocalVarMap = new HashMap();
     
     
     private HashMap<String, Object> metadata = new HashMap<>();  
@@ -74,6 +75,13 @@ public class Problem implements ImmutableProblem {
     public int getNumberOfAgents() {
         return this.agentDomain.length; 
     }
+    /************agent status**************/
+    public boolean hasAgentInitialized(int agentID) {
+    	return agentHasInitialized.get(agentID);
+    }
+    public boolean setAgentInitialized(int agentID) {
+    	return agentHasInitialized.put(agentID, true);
+    }
     /************domains**************/
     /**
      * return the agentDomain size of the agent
@@ -99,14 +107,39 @@ public class Problem implements ImmutableProblem {
     public List<Integer> getVariables(int agentId) {
         return agentVarMap.get(agentId);
     }
+        
+    public void setPrincipalVariables(int agentID, ArrayList<Integer> principleVars) {
+//    	agentPrincipalVarMap.remove(agentID);
+    	agentPrincipalVarMap.put(agentID, principleVars);
+    }
     
-//    public List<Integer> getExternalVariables(int agentId) {
-//    	return agentExternalVarMap.get(agentId);
-//    }
-//    
-//    public List<Integer> geLocalVariables(int agentId) {
-//    	return agentLocalVarMap.get(agentId);
-//    }
+    public int getPrincipalVarsHashValue(int agentID, int hashVal) {
+    	int principleVarsHashVal = 0;
+    	Integer[] myVarsValues = parseAgentValue(agentID, hashVal);
+    	ArrayList<Integer> myVars = agentVarMap.get(agentID);
+//    	if (!agentPrincipalVarMap.containsKey(agentID)) {
+//    		return hashVal;
+//    	}
+//    	else {
+        	List<Integer> myPrincipalVars = agentPrincipalVarMap.get(agentID);
+        	int myPrincipalVarNum = myPrincipalVars.size();
+        	int varDom = getVarDomain().size();
+        	int count = 0;
+        	for (int i = 0; i < myVars.size(); i++) {
+        		int myVarID = myVars.get(i);
+        		if (myPrincipalVars.contains(myVarID)) {
+        			count ++;
+        			principleVarsHashVal += myVarsValues[i] * Math.pow(varDom, myPrincipalVarNum - count);
+        		}
+        	} 	
+        	return principleVarsHashVal;
+//    	}
+    }
+    
+    
+    public List<Integer> getPrincipalVariables(int agentId) {
+    	return agentPrincipalVarMap.get(agentId);
+    }
     /************neighbors**************/
     /**
      * @param agent
@@ -131,47 +164,11 @@ public class Problem implements ImmutableProblem {
         return getAgentNeighbors(agent1).contains(agent2);
     }
 
-//    public void setAgentConstraintCost(int owner, int x1, int v1, int x2, int v2, int cost) {
-//    	constraintsOnAgents.setConstraintCost(owner, x1, v1, x2, v2, cost);
-//    }
-//
-//    public void setAgentConstraintCost(int owner, int x1, int v1, int cost) {
-//    	constraintsOnAgents.setConstraintCost(owner, x1, v1, cost);
-//    }
-//
-//    public void setAgentConstraintCost(int x1, int v1, int x2, int v2, int cost) {
-//    	constraintsOnAgents.setConstraintCost(x1, x1, v1, x2, v2, cost);
-//    }
-//
-//    public void setAgentConstraintCost(int x1, int v1, int cost) {
-//    	constraintsOnAgents.setConstraintCost(x1, x1, v1, cost);
-//    }
-
-//    public void getAgentConstraintCost(int owner, int x1, int v1, ConstraintCheckResult result) {
-//    	constraintsOnAgents.getConstraintCost(owner, x1, v1, result);
-//    }
-//
-//    public void getAgentConstraintCost(int owner, int x1, int v1, int x2, int v2,
-//    		ConstraintCheckResult result) {
-//    	constraintsOnAgents.getConstraintCost(owner, x1, v1, x2, v2, result);
-//    }
-//
-//    public int getAgentConstraintCost(int owner, int x1, int v1) {
-//        ConstraintCheckResult result = new ConstraintCheckResult();
-//        constraintsOnAgents.getConstraintCost(owner, x1, v1, result);
-//        return result.getCost();
-//    }
-//
-//    public int getAgentConstraintCost(int owner, int x1, int v1, int x2, int v2) {
-//        ConstraintCheckResult result = new ConstraintCheckResult();
-//        constraintsOnAgents.getConstraintCost(owner, x1, v1, x2, v2, result);
-//        return result.getCost();
-//    }
-
-    public int getAgentConstraintCost(int x1, int v1) {
+    public int getAgentConstraintCost(int x1, int v1, ConstraintCheckResult resultOnAgents) {
     	Integer[] myVarsValues = parseAgentValue(x1, v1);
     	ArrayList<Integer> myVars = agentVarMap.get(x1);
     	int cost = 0;
+    	int cc = 0;
         ConstraintCheckResult result = new ConstraintCheckResult();
     	for(int i = 0; i < myVars.size(); i++) {
     		int varID1 = myVars.get(i);
@@ -181,29 +178,35 @@ public class Problem implements ImmutableProblem {
         		int val2 = myVarsValues[j];
         		constraintsOnVars.getConstraintCost(varID1, varID1, val1, varID2, val2, result);
         		cost += result.getCost();
+        		cc += result.getCheckCost();
     		}
     	}
+    	
+    	resultOnAgents.set(cost, cc);
     	return cost;
     }
 
-    public int getAgentConstraintCost(int x1, int v1, int x2, int v2) {
+    public int getAgentConstraintCost(int x1, int v1, int x2, int v2, ConstraintCheckResult resultOnAgents) {
     	Integer[] myVarsValues1 = parseAgentValue(x1, v1);
     	ArrayList<Integer> myVars1 = agentVarMap.get(x1);
     	Integer[] myVarsValues2 = parseAgentValue(x2, v2);
     	ArrayList<Integer> myVars2 = agentVarMap.get(x2);
-    	ConstraintCheckResult result = new ConstraintCheckResult();
+    	ConstraintCheckResult resultOnVars = new ConstraintCheckResult();
     	int cost = 0;
+    	int cc = 0;
     	for(int i = 0; i < myVars1.size(); i++) {
     		int varID1 = myVars1.get(i);
     		int val1 = myVarsValues1[i];
     		for(int j = 0; j < myVars2.size(); j++) {
         		int varID2 = myVars2.get(j);
         		int val2 = myVarsValues2[j];
-        		constraintsOnVars.getConstraintCost(varID1, varID1, val1, varID2, val2, result);
-        		cost += result.getCost();
+        		constraintsOnVars.getConstraintCost(varID1, varID1, val1, varID2, val2, resultOnVars);
+        		cost += resultOnVars.getCost();
+        		cc += resultOnVars.getCheckCost();
     		}
     	}
     	
+    	resultOnAgents.set(cost, cc);
     	return cost;
     }
     
@@ -222,15 +225,6 @@ public class Problem implements ImmutableProblem {
 		return parsedValue;	
 	}
 
-//    public void getAgentConstraintCost(int owner, Assignment k, ConstraintCheckResult result) {
-//    	constraintsOnAgents.getConstraintCost(owner, k, result);
-//    }
-//
-//    public int getAgentConstraintCost(int owner, Assignment k) {
-//        ConstraintCheckResult result = new ConstraintCheckResult();
-//        constraintsOnAgents.getConstraintCost(owner, k, result);
-//        return result.getCost();
-//    }
    
     /****************** Agent layer finish ******************/
     /**-----------------------------------------------------------------------------------**/
@@ -555,6 +549,10 @@ public class Problem implements ImmutableProblem {
     	agentVarMap = runningAgentVarMap;
     	realAgentVarMap = trueAgentVarMap;
     	
+    	for (int agentID : agentVarMap.keySet()) {
+    		agentHasInitialized.put(agentID, false);
+    	}
+//    	agentPrincipalVarMap = agentVarMap;  // initialize all the varibles as principal variables at first
     	List<Set<Integer>> varDomains = new ArrayList();
     	for (int varID = 0; varID < varDomainMap.size(); varID++) {
     		int varDomainSize = (int) varDomainMap.get(varID);
@@ -666,5 +664,27 @@ public class Problem implements ImmutableProblem {
     	}
     	return -1;
     }
+
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentConstraintCost(int, int, int, int)
+	 */
+	@Override
+	public int getAgentConstraintCost(int var1, int val1, int var2, int val2) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentConstraintCost(int, int)
+	 */
+	@Override
+	public int getAgentConstraintCost(int var1, int val1) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+
 
 }

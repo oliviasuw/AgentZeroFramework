@@ -17,8 +17,11 @@ import java.util.Set;
 
 /**
  * Created by Chris Qin on 10/9/2014.
+ * @modified by Olivia
+ * 1. support unary costs
+ * 2. Suitable for VA, PC, OC methods
  */
-@Algorithm(name="BnBAdopt", useIdleDetector=true)
+@Algorithm(name="BnBAdoptAgent", useIdleDetector=true)
 public class BnBAdoptAgent extends SimpleAgent {
 	
 	boolean debug = false;
@@ -137,9 +140,14 @@ public class BnBAdoptAgent extends SimpleAgent {
     }
 
     public int calcDelta(int val){
-        if(tree.isRoot())
-            return 0;
         int delta = 0;
+        //Olivia added
+        // unary cost
+        delta += getAgentConstraintCost(getId(), val);
+        if(tree.isRoot())
+            return delta;
+        
+        // binary cost
         for(int ancestor : SCA){
             delta += getAgentConstraintCost(getId(), val, ancestor, cpa.get(ancestor).getValue());
         }
@@ -164,10 +172,10 @@ public class BnBAdoptAgent extends SimpleAgent {
                 send("TERMINATE").to(child);
             }
             
-            File file = new File("costs.txt");
+            File file = new File("statistics.txt");
             try {
                 FileWriter fileWriter = new FileWriter(file, true);
-                fileWriter.write("#" + UB + "\t");
+                fileWriter.write("\t" + UB + "\t");
                 fileWriter.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -259,6 +267,15 @@ public class BnBAdoptAgent extends SimpleAgent {
 
     @WhenReceived("VALUE")
     public void handleVALUE(int p, int dp, int IDp, int THp){
+    	if(debug){
+    		System.out.println("*Processing VALUE* [" + getId() + "] receive from ["  + p + 
+    				"] ID = " + IDp + " d = " + dp);
+    	}
+    	
+    	if(getId() ==  2){
+    		System.out.print("test");
+    	}
+    	
         HashMap<Integer, AssignmentInfo> _cpa = copyCPA(cpa);
         priorityMerge(p,  dp, IDp, cpa);
         if(!isCompatible(_cpa, cpa)){
@@ -276,7 +293,15 @@ public class BnBAdoptAgent extends SimpleAgent {
 
     @WhenReceived("COST")
     public void handleCOST(int c, HashMap<Integer, AssignmentInfo>cCPA, int LBc, int UBc){
-        HashMap<Integer, AssignmentInfo> _cpa = copyCPA(cpa);
+    	if(debug){
+    		System.out.println("*Processing COST* [" + getId() + "] receive from ["  + c + 
+    				"] LBc = " + LBc + " UBc = " + UBc);
+    	}
+    	if(debug && getId() == 2 && LBc==2493){
+    		System.out.println("test");
+    	}
+    	
+    	HashMap<Integer, AssignmentInfo> _cpa = copyCPA(cpa);
         priorityMerge(cCPA, cpa);
         if(!isCompatible(_cpa, cpa)){
             for(int i = 0; i < tree.getChildren().size(); i++){
@@ -315,3 +340,4 @@ public class BnBAdoptAgent extends SimpleAgent {
         finish();
     }
 }
+
