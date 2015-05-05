@@ -161,7 +161,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
 
     public void InitSelf(){
         int min = Integer.MAX_VALUE;
-        for(int value : getAgentDomain()){
+        for(int value = 0; value < getAgentDomainSize(); value ++){
             if(min > calcDelta(value) + sumlbORub(lbChildD, value)){
                 min = calcDelta(value) + sumlbORub(lbChildD, value);
                 d = value;
@@ -230,10 +230,6 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
     		}
     	}
         for(int i = 0; i < getAgentDomainSize(); i++){
-            //if(getId()==2 && !tree.isLeaf()){
-            //System.out.println("delta = " + calcDelta(i) +" i = " + i + " " + lbChildD[0][i] + " " + ubChildD[0][i]);
-            //System.out.println("SCA: " + SCA);
-            //}
             LBD[i] = calcDelta(i) + sumlbORub(lbChildD, i);
             UBD[i] = positivInfinityPlus(calcDelta(i), sumlbORub(ubChildD, i));
         }
@@ -702,7 +698,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
     	double alpha = Double.MAX_VALUE;
     	double cost = 0;  	
     	if(ProjectToMe == projectDirection){
-    		for(int myVal : this.getAgentDomain()){
+    		for(int myVal = 0; myVal < this.getAgentDomainSize(); myVal++){
     			alpha = myACConstruct.checkAlphaProjectToMe(getId(), myVal, neighbor);
     			if(0 < alpha){
     				myACConstruct.updateCostsWhenProjectToMe(getId(), myVal, neighbor, 
@@ -712,7 +708,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
 
     	}
     	if(ProjectFromMe == projectDirection){
-    		for(int hisVal : this.getAgentDomainOf(neighbor)){
+    		for(int hisVal = 0; hisVal < this.getAgentDomainSize(neighbor); hisVal++){
     			alpha = myACConstruct.checkAlphaProjectToNeighbor(getId(), neighbor, 
     					hisVal);
     			if(!ACPreprocessFlag && recoverFlag && needRecord){
@@ -738,16 +734,19 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
     void checkDomainForDeletions(){
     	Vector<Integer> valuesToDelete = new Vector();
     	double cPhi =  myACConstruct.global_cPhi;
-    	for(int myVal : this.getAgentDomain()){
+    	for(int myVal = 0; myVal < this.getAgentDomainSize(); myVal++){
     		double cSelf = myACConstruct.unaryCosts[myVal];
     		if(cSelf + cPhi > myACConstruct.global_top && !myACConstruct.pruned[myVal]){
     			valuesToDelete.add(myVal);
     			myACConstruct.pruned[myVal] = true;
     			// SuWen Debug
-    			System.out.println("Current my top:" + myACConstruct.global_top +
-    					"\tCurrent my cPhi:"+cPhi + "\tUnaryCost of var["+
-    					myVal + "]:"+cSelf);
-    			System.out.println("["+ myVal + "] pruned from variable " + getId());
+    			if(debug){
+        			System.out.println("Current my top:" + myACConstruct.global_top +
+        					"\tCurrent my cPhi:"+cPhi + "\tUnaryCost of var["+
+        					myVal + "]:"+cSelf);
+        			System.out.println("["+ myVal + "] pruned from variable " + getId());
+    			}
+
     			
     			myACConstruct.unaryCosts[myVal] = Double.MAX_VALUE;
     		}
@@ -921,7 +920,10 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
 					myACConstruct.P_records[neighborIndex][i] = ACCounter;
 //					myACConstruct.P_records[neighborIndex][i] = new Double[getProblem().getDomainSize(neighbor)];
 				}
-				System.out.println("k:" + myACConstruct.P_records[neighborIndex][i].length);
+				if(debug){
+					System.out.println("k:" + myACConstruct.P_records[neighborIndex][i].length);
+				}
+				
     			double alpha = myACConstruct.P_records[neighborIndex][i][hisVal];
     			myACConstruct.updateCostsWhenRollBack(getId(), neighbor, hisVal, alpha);
     		}

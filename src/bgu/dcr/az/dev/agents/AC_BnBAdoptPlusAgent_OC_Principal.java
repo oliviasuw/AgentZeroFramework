@@ -31,7 +31,7 @@ import confs.defs;
 @Algorithm(name="AC_BnBAdoptPlusAgent_OC_Principal", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
 public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
 
-	boolean debug = true;
+	boolean debug = false;
 	boolean TERMINATE_CONTROL = true;
 	boolean IN_AGNET_COUNTER_ON = false;
     /** Structures for BnB-ADOPT+ only **/
@@ -185,10 +185,10 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
     }
     public void InitSelf(){
     	// Set my principle variables
-    	getProblem().setPrincipalVariables(getId(), identifyPrincipalVars());
+    	getProblem().setWeakPrincipalVariables(getId(), identifyPrincipalVars());
     	getProblem().setAgentInitialized(getId());
         int min = Integer.MAX_VALUE;
-        for(int value : getAgentDomain()){
+        for(int value = 0; value < getAgentDomainSize(); value ++){
             if(min > calcDelta(value) + sumlbORub(lbChildD, value)){
                 min = calcDelta(value) + sumlbORub(lbChildD, value);
                 d = value;
@@ -316,7 +316,7 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
         	}
     	}
    
-        int currentVal = getProblem().getPrincipalVarsHashValue(getId(), d);    	
+        int currentVal = getProblem().getWeakPrincipalVarsHashValue(getId(), d);    	
         for(int child : tree.getChildren()){
             if(PlusOn) {
                 if(!lastSentPrinHashVALUEs.containsKey(child) || lastSentPrinHashVALUEs.get(child) != currentVal
@@ -486,8 +486,8 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
             	int prinHashVal_dp = dp;
             	int prinHashVal_cpa = _cpa.get(p).getValue();
             	if(getProblem().hasAgentInitialized(p)) {
-                	prinHashVal_dp = getProblem().getPrincipalVarsHashValue(p, dp);
-                	prinHashVal_cpa = getProblem().getPrincipalVarsHashValue(p, _cpa.get(p).getValue());
+                	prinHashVal_dp = getProblem().getWeakPrincipalVarsHashValue(p, dp);
+                	prinHashVal_cpa = getProblem().getWeakPrincipalVarsHashValue(p, _cpa.get(p).getValue());
             	}
 
                 if(prinHashVal_dp != prinHashVal_cpa){
@@ -511,9 +511,9 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
                 	int prinHashVal_old = _cpa.get(entry.getKey()).getValue();
                 	if(getProblem().hasAgentInitialized(hisAgentID)) {
                     	prinHashVal_received = getProblem().
-                    			getPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
+                    			getWeakPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
                     	prinHashVal_old = getProblem().
-                    			getPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
+                    			getWeakPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
                 	}
 
                     if(prinHashVal_received != prinHashVal_old){
@@ -535,13 +535,13 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
         	int prinHashVal_received = entry.getValue().getValue();
         	if(getProblem().hasAgentInitialized(hisAgentID)) {
         		prinHashVal_received = getProblem().
-            			getPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
+            			getWeakPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
         	}
             if(_cpa.containsKey(entry.getKey())){
             	int prinHashVal_old = _cpa.get(entry.getKey()).getValue();
             	if(getProblem().hasAgentInitialized(hisAgentID)) {
             		prinHashVal_old = getProblem().
-                			getPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
+                			getWeakPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
             	}
             	
             	if (prinHashVal_received != prinHashVal_old) {
@@ -631,9 +631,9 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
         	// But also update all the ones with the same values for pinciple variables
         	int d_received = cCPA.get(getId()).getValue();
         	int prinHashVal_received = getProblem().
-        			getPrincipalVarsHashValue(getId(), d_received);
-        	for(int my_d = 0; my_d < getAgentDomain().size(); my_d++) {
-        		int myPrinHash_d = getProblem().getPrincipalVarsHashValue(getId(), my_d);
+        			getWeakPrincipalVarsHashValue(getId(), d_received);
+        	for(int my_d = 0; my_d < getAgentDomainSize(); my_d++) {
+        		int myPrinHash_d = getProblem().getWeakPrincipalVarsHashValue(getId(), my_d);
         		if (myPrinHash_d == prinHashVal_received) {
                     lbChildD[tree.getChildren().indexOf(c)][my_d] = 
                     		max(lbChildD[tree.getChildren().indexOf(c)][my_d], LBc);
@@ -771,7 +771,7 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
     	double alpha = Double.MAX_VALUE;
     	double cost = 0;  	
     	if(ProjectToMe == projectDirection){
-    		for(int myVal : this.getAgentDomain()){
+    		for(int myVal = 0; myVal < this.getAgentDomainSize(); myVal++){
     			alpha = myACConstruct.checkAlphaProjectToMe(getId(), myVal, neighbor);
     			if(0 < alpha){
     				myACConstruct.updateCostsWhenProjectToMe(getId(), myVal, neighbor, 
@@ -781,7 +781,7 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
 
     	}
     	if(ProjectFromMe == projectDirection){
-    		for(int hisVal : this.getAgentDomainOf(neighbor)){
+    		for(int hisVal = 0; hisVal < this.getAgentDomainSize(neighbor); hisVal++){
     			alpha = myACConstruct.checkAlphaProjectToNeighbor(getId(), neighbor, 
     					hisVal);
     			if(!ACPreprocessFlag && recoverFlag && needRecord){
@@ -807,7 +807,7 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
     void checkDomainForDeletions(){
     	Vector<Integer> valuesToDelete = new Vector();
     	double cPhi =  myACConstruct.global_cPhi;
-    	for(int myVal : this.getAgentDomain()){
+    	for(int myVal = 0; myVal < this.getAgentDomainSize(); myVal++){
     		double cSelf = myACConstruct.unaryCosts[myVal];
     		if(cSelf + cPhi > myACConstruct.global_top && !myACConstruct.pruned[myVal]){
     			valuesToDelete.add(myVal);

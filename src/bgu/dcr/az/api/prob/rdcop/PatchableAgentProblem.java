@@ -151,14 +151,14 @@ public class PatchableAgentProblem implements PossibleProblem {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-	/* (non-Javadoc)
-	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainOf(int)
-	 */
-	@Override
-	public ImmutableSet<Integer> getAgentDomainOf(int agent) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
+//	/* (non-Javadoc)
+//	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainOf(int)
+//	 */
+//	@Override
+//	public ImmutableSet<Integer> getAgentDomainOf(int agent) {
+//		// TODO Auto-generated method stub
+//		throw new UnsupportedOperationException("Not supported yet.");
+//	}
 
 	/* (non-Javadoc)
 	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainSize(int)
@@ -208,30 +208,30 @@ public class PatchableAgentProblem implements PossibleProblem {
 	/* (non-Javadoc)
 	 * @see bgu.dcr.az.api.prob.ImmutableProblem#setPrincipalVariables(int, java.util.ArrayList)
 	 */
-	@Override
-	public void setPrincipalVariables(int agentId,
-			ArrayList<Integer> principleVars) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getPrincipalVarsHashValue(int, int)
-	 */
-	@Override
-	public int getPrincipalVarsHashValue(int agentID, int hashVal) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	/* (non-Javadoc)
-	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getPrincipalVariables(int)
-	 */
-	@Override
-	public List<Integer> getPrincipalVariables(int agentId) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
+//	@Override
+//	public void setPrincipalVariables(int agentId,
+//			ArrayList<Integer> principleVars) {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getPrincipalVarsHashValue(int, int)
+//	 */
+//	@Override
+//	public int getPrincipalVarsHashValue(int agentID, int hashVal) {
+//		// TODO Auto-generated method stub
+//		throw new UnsupportedOperationException("Not supported yet.");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getPrincipalVariables(int)
+//	 */
+//	@Override
+//	public List<Integer> getPrincipalVariables(int agentId) {
+//		// TODO Auto-generated method stub
+//		throw new UnsupportedOperationException("Not supported yet.");
+//	}
 
 	/* (non-Javadoc)
 	 * @see bgu.dcr.az.api.prob.ImmutableProblem#hasAgentInitialized(int)
@@ -247,6 +247,119 @@ public class PatchableAgentProblem implements PossibleProblem {
 	 */
 	@Override
 	public boolean setAgentInitialized(int agentID) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#setWeakPrincipalVariables(int, java.util.ArrayList)
+	 */
+	@Override
+	public void setWeakPrincipalVariables(int agentId,
+			ArrayList<Integer> principleVars) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getWeakPrincipalVarsHashValue(int, int)
+	 */
+	@Override
+	public int getWeakPrincipalVarsHashValue(int agentID, int hashVal) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getFullValListFromExternalVal(int, int)
+	 */
+	@Override
+	public ArrayList<Integer> getFullValListFromExternalVal(int agentID,
+			int exterVal) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getWeakPrincipalVariables(int)
+	 */
+	@Override
+	public List<Integer> getWeakPrincipalVariables(int agentId) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#setStrongPrincipalVariables(int, java.util.HashMap)
+	 */
+	@Override
+	public void setStrongPrincipalVariables(int agentId,
+			HashMap<Integer, ArrayList<Integer>> childPrincipleVarsMap) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getStrongPrincipalVarsHashValue(int, int, int)
+	 */
+	@Override
+	public int getStrongPrincipalVarsHashValue(int agentID, int child,
+			int hashVal) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getStrongPrincipalVariables(int, int)
+	 */
+	@Override
+	public List<Integer> getStrongPrincipalVariables(int agentId, int child) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#hasAllInitialized()
+	 */
+	@Override
+	public boolean hasAllInitialized() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#setChildren(int, java.util.List)
+	 */
+	@Override
+	public void setChildren(int agent, List<Integer> list) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getChildren(int)
+	 */
+	@Override
+	public List<Integer> getChildren(int agent) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#setChildDescendMap(int, java.util.HashMap)
+	 */
+	@Override
+	public void setChildDescendMap(int agent,
+			HashMap<Integer, List<Integer>> childDescendMap) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	/* (non-Javadoc)
+	 * @see bgu.dcr.az.api.prob.ImmutableProblem#getChildDescendMap(int)
+	 */
+	@Override
+	public HashMap<Integer, List<Integer>> getChildDescendMap(int agent) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

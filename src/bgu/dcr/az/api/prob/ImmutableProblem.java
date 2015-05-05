@@ -35,13 +35,22 @@ public interface ImmutableProblem {
     /****************** Agent layer start ******************/
     int getNumberOfAgents();
     
-    void setPrincipalVariables(int agentId, ArrayList<Integer> principleVars);
+    /** weaker principal **/
+    void setWeakPrincipalVariables(int agentId, ArrayList<Integer> principleVars);
     
-    int getPrincipalVarsHashValue(int agentID, int hashVal);
+    int getWeakPrincipalVarsHashValue(int agentID, int hashVal);
+    public ArrayList<Integer> getFullValListFromExternalVal(int agentID, int exterVal);
     
-    List<Integer> getPrincipalVariables(int agentId);
+    List<Integer> getWeakPrincipalVariables(int agentId);
+    
+    /** strong principal **/
+    void setStrongPrincipalVariables(int agentId, HashMap<Integer, ArrayList<Integer>> childPrincipleVarsMap);
+    
+    int getStrongPrincipalVarsHashValue(int agentID, int child, int hashVal);
+    
+    List<Integer> getStrongPrincipalVariables(int agentId, int child);
 
-    ImmutableSet<Integer> getAgentDomainOf(int agent);
+//    ImmutableSet<Integer> getAgentDomainOf(int agent);
 
     int getAgentDomainSize(int agent);
 
@@ -51,7 +60,11 @@ public interface ImmutableProblem {
     
     boolean hasAgentInitialized(int agentID);
     boolean setAgentInitialized(int agentID);
-    
+    boolean hasAllInitialized();
+    void setChildren(int agent, List<Integer> list);
+    List<Integer> getChildren(int agent);
+    void setChildDescendMap(int agent, HashMap<Integer, List<Integer>> childDescendMap);
+    HashMap<Integer, List<Integer>> getChildDescendMap(int agent);
     /**
     *
     * @param var1

@@ -5,11 +5,14 @@
 package bgu.dcr.az.api.tools;
 
 import java.util.Set;
+
 import bgu.dcr.az.api.Agent;
 import bgu.dcr.az.api.agt.SimpleAgent;
 import bgu.dcr.az.api.ano.Algorithm;
 import bgu.dcr.az.api.ano.WhenReceived;
+import bgu.dcr.az.api.prob.ImmutableProblem;
 import confs.Counter;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -55,10 +58,9 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
         descendants = new LinkedList<Integer>();
         pParentsDepths = new LinkedList<Integer>();
         // Added by Chris
-        childDescendantsMap = new HashMap<Integer, List<Integer>>();
+        // key: child  value:the nodes that in the subtree rooted at the child and are connected with the child given in the key 
+        childDescendantsMap = new HashMap<Integer, List<Integer>>(); 
         ancestors = new LinkedList<Integer>();
-        // Added by Su Wen
-        neighbors = new LinkedList<Integer>();
     }
 
     @Override
@@ -179,12 +181,42 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
             for (int i = 0; i < dones.length; i++) {
                 dones[i] = false;
             }
-            root = 0;//lsa.select(callingAgent);
+
+            //Olivia modified
+//          root = 0;  //lsa.select(callingAgent);
+            root = selectRoot();
 
             if (this.getId() == root) {
 //                log("starting dfsVisit");
                 dfsVisit();
             }
+        }
+        
+        // MaxCardinalityFirst
+        public int selectRoot() {
+        	int maxCardinalityAgentID = 0;
+        	int maxNeighborNum = 0;
+        	for (int agentID = 0; agentID < getProblem().getNumberOfAgents(); agentID++) {
+        		int neighborNum = getProblem().getAgentNeighbors(agentID).size();
+        		if (neighborNum > maxNeighborNum) {
+        			maxNeighborNum = neighborNum;
+        			maxCardinalityAgentID = agentID;
+        		}
+        	}
+        	return maxCardinalityAgentID;
+        }
+        
+        public int selectNextRoot() {
+        	int nextNeighbor = neighbors.get(0);
+        	int maxNeighborNum = 0;
+        	for (int neighbor: neighbors) {
+        		int neighborNum = getProblem().getAgentNeighbors(neighbor).size();
+        		if (neighborNum > maxNeighborNum) {
+        			maxNeighborNum = neighborNum;
+        			nextNeighbor = neighbor;
+        		}
+        	}
+        	return nextNeighbor;
         }
 
         @Override
@@ -209,7 +241,9 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
         private void visitNextNeighbor() {
             if (neighbors.size() > 0) {
 //                //System.out.println("A"+getId()+" SENDING VISIT TO: "+ neighbors.get(0));
-                send("VISIT", depth + 1).to(neighbors.get(0));
+            	//Olivia modified
+//                send("VISIT", depth + 1).to(neighbors.get(0));
+            	send("VISIT", depth + 1).to(selectNextRoot());
                 Counter.treeBuildVisitMsgCounter ++;
             } else {
 //                //System.out.println("A"+getId()+" ENDED WITH NEIGHBORS");
@@ -285,7 +319,10 @@ public class DFSPsaudoTree extends NestableTool implements PsaudoTree {
                     finish();
                 //System.out.println("A"+getId()+" FINISHING!!");
                 //finish();//finish = true;
-            } else if (color == COLOR_GRAY && neighbors.get(0) == node) {
+                    
+               //Olivia modified
+//            } else if (color == COLOR_GRAY && neighbors.get(0) == node) {
+            } else if (color == COLOR_GRAY && selectNextRoot() == node) {
                 neighbors.remove(node);
                 //System.out.println("A"+getId()+" VISITING NEIGHBORE");
                 visitNextNeighbor();

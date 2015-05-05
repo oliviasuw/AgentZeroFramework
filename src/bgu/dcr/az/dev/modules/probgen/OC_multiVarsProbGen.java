@@ -28,7 +28,7 @@ public class OC_multiVarsProbGen extends AbstractProblemGenerator {
     String fileName;
 	
     public void generate(Problem p, Random rand) {
-    	File dir = new File("problems");
+    	File dir = new File("../problems");
     	File[] files = dir.listFiles();
     	fileName = files[fileNo-1].getName();
     	System.out.println(fileName);

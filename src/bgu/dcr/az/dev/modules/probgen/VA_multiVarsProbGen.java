@@ -32,7 +32,7 @@ public class VA_multiVarsProbGen extends AbstractProblemGenerator {
 
     @Override
     public void generate(Problem p, Random rand) {
-    	File dir = new File("problems");
+    	File dir = new File("../problems");
     	File[] files = dir.listFiles();
     	fileName = files[fileNo-1].getName();
     	writeToFile();

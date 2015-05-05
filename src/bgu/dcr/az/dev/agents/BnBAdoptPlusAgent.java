@@ -24,7 +24,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 @Algorithm(name="BnBAdoptPlusAgent", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
 public class BnBAdoptPlusAgent extends SimpleAgent {
 
-	boolean debug = true;
+	boolean debug = false;
     /** Structures for BnB-ADOPT+ only **/
     boolean PlusOn = true;
     // key: child/pseudochild ID; value: lastSentVALUE
@@ -132,8 +132,24 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
     }
 
     public void InitSelf(){
+    	//debug
+//    	if(debug){
+//        	System.out.println("Agent: " + getId());
+//        	System.out.println("\tdescendants:" + tree.getDescendants());
+//        	System.out.println("\tchildDescendants:");
+//        	for(int child : tree.getChildren()){
+//        		System.out.print("\t\tchild:" + child );
+//        		for(int de : tree.getChildDescendants(child))
+//        			System.out.print(" myDesendant: " + de);
+//        		System.out.println();
+//        		
+//        	}
+//    	}
+
+    	
         int min = Integer.MAX_VALUE;
-        for(int value : getAgentDomain()){
+//        for(int value : getAgentDomain()){
+        for(int value = 0; value < getAgentDomainSize(); value ++){
             if(min > calcDelta(value) + sumlbORub(lbChildD, value)){
                 min = calcDelta(value) + sumlbORub(lbChildD, value);
                 d = value;
@@ -185,14 +201,19 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
 //    		long msgtime = ((Long) msg.getMetadata().get("nccc")).intValue();
 //    		System.out.println("Msg Time: " + msgtime);
 //    	}
-    	
+    	//debug
+    	if(debug && getId() == 2) {
+    		System.out.println("In variable #" + getId() + "# LB:" + LB
+    				+" UB:" + UB);
+    	}
+
         for(int i = 0; i < getAgentDomainSize(); i++){
             LBD[i] = calcDelta(i) + sumlbORub(lbChildD, i);
             UBD[i] = positivInfinityPlus(calcDelta(i), sumlbORub(ubChildD, i));
         }
         LB = findMinimum(LBD, 1, 0);
         UB = findMinimum(UBD, 1, 0);
-
+        
 
         if(LBD[d] >= min(TH, UB)){
             d = findMinimum(LBD, 2, d);
@@ -225,8 +246,8 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
                             + lbChildD[tree.getChildren().indexOf(child)][d]).to(child);
                     receivedThReqs.put(child, false);
                     if(debug){
-                    	System.out.println("#VALUE# from [" + getId() + "] to [" 
-                    + child + "] [d: " + d +"] [ID: " + ID +"]");
+                    	System.out.println("#VALUE# from #" + getId() + "# to #" 
+                    + child + "# [d: " + d +"] [ID: " + ID +"]");
                     }
                 }
                 lastSentVALUEs.put(child, d);
@@ -246,8 +267,8 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
                     send("VALUE", getId(), d, ID, Integer.MAX_VALUE).to(pseudoChild);
                     receivedThReqs.put(pseudoChild, false);
                     if(debug){
-                    	System.out.println("#VALUE# from [" + getId() + "] to [" 
-                    + pseudoChild + "] [d: " + d +"] [ID: " + ID +"]");
+                    	System.out.println("#VALUE# from #" + getId() + "# to #" 
+                    + pseudoChild + "# [d: " + d +"] [ID: " + ID +"]");
                     }
                 }
                 lastSentVALUEs.put(pseudoChild, d);
@@ -268,9 +289,15 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
                     send("COST", getId(), cpa, LB, UB, myThReq).to(tree.getParent());
                     myThReq = false;
                     if(debug){
-                    	System.out.println("#COST# from [" + getId() + "] to [" + tree.getParent()
-                    			+"] [LB: " + LB +"] [UB: " + UB +"]");
+                    	System.out.println("#COST# from #" + getId() + "# to #" + tree.getParent()
+                    			+"# [LB: " + LB +"] [UB: " + UB +"]");
+                    	System.out.println("#cpa:#");
+                    	for(int key : cpa.keySet()){
+                    		System.out.println("var: " + key + " val: " + cpa.get(key).value + " ID: "+ 
+                    	cpa.get(key).ID);
+                    	}
                     }
+
                 }
                 lastSentCPA = cpa;
                 lastSentLB = LB;
@@ -351,8 +378,8 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
     @WhenReceived("VALUE")
     public void handleVALUE(int p, int dp, int IDp, int THp){
     	if(debug){
-    		System.out.println("*Processing VALUE* [" + getId() + "] receive from ["  + p + 
-    				"] ID = " + IDp + " d = " + dp);
+    		System.out.println("*Processing VALUE #" + getId() + "# receive from #"  + p + 
+    				"# ID = " + IDp + " d = " + dp);
     	}
         //System.out.println("I am " + getId() + "VALUE received: " + "p = " + p + " dp = " + dp + " IDp = " + IDp + " THp = " + THp + ", mycpa: " + print(cpa));
         HashMap<Integer, AssignmentInfo> _cpa = copyCPA(cpa);
@@ -377,8 +404,8 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
     @WhenReceived("COST")
     public void handleCOST(int c, HashMap<Integer, AssignmentInfo>cCPA, int LBc, int UBc, boolean thReq){
     	if(debug){
-    		System.out.println("*Processing COST* [" + getId() + "] receive from ["  + c + 
-    				"] LBc = " + LBc + " UBc = " + UBc);
+    		System.out.println("*Processing COST #" + getId() + "# receive from #"  + c + 
+    				"# LBc = " + LBc + " UBc = " + UBc);
     	}
         
 

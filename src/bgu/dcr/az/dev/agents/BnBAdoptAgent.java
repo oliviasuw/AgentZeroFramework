@@ -116,7 +116,8 @@ public class BnBAdoptAgent extends SimpleAgent {
 
     public void InitSelf(){
         int min = Integer.MAX_VALUE;
-        for(int value : getAgentDomain()){
+//        for(int value : getAgentDomain()){
+        for(int value = 0; value < getAgentDomainSize(); value ++){
             if(min > calcDelta(value) + sumlbORub(lbChildD, value)){
                 min = calcDelta(value) + sumlbORub(lbChildD, value);
                 d = value;
@@ -172,6 +173,7 @@ public class BnBAdoptAgent extends SimpleAgent {
                 send("TERMINATE").to(child);
             }
             
+            System.out.println("########### Minimum cost: " + UB +" ###############");
             File file = new File("statistics.txt");
             try {
                 FileWriter fileWriter = new FileWriter(file, true);
@@ -249,7 +251,8 @@ public class BnBAdoptAgent extends SimpleAgent {
 
     public void priorityMerge(HashMap<Integer, AssignmentInfo> cpa1, HashMap<Integer, AssignmentInfo> _cpa) {
         for(Map.Entry<Integer, AssignmentInfo> entry : cpa1.entrySet()){
-            if(_cpa.containsKey(entry.getKey()) && entry.getValue().getID() > _cpa.get(entry.getKey()).getID()){
+            if(_cpa.containsKey(entry.getKey()) && entry.getValue().getID() > 
+			_cpa.get(entry.getKey()).getID()){
                 _cpa.remove(entry.getKey());
                 _cpa.put(entry.getKey(), new AssignmentInfo(entry.getValue().getValue(), entry.getValue().getID()));
             }
@@ -270,10 +273,6 @@ public class BnBAdoptAgent extends SimpleAgent {
     	if(debug){
     		System.out.println("*Processing VALUE* [" + getId() + "] receive from ["  + p + 
     				"] ID = " + IDp + " d = " + dp);
-    	}
-    	
-    	if(getId() ==  2){
-    		System.out.print("test");
     	}
     	
         HashMap<Integer, AssignmentInfo> _cpa = copyCPA(cpa);

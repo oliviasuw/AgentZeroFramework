@@ -12,7 +12,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -35,23 +37,29 @@ public class Problem implements ImmutableProblem {
         single,  // one variable per agent, default one
         multiple_VA,  // multi variables per agent, virtual agent approach
         multiple_OC,  // multi variables per agent, online compilation approach
+        hybridize  // multi variables per agent
     }
     
     public ModelType modelType = ModelType.single; //default
-    //For algorithm running, for multiple_VA, each agent has only one variable
+    //For algorithm intialization, for multiple_VA, each agent has only one variable
+    protected static HashMap<Integer, ArrayList<Integer>> intAgentVarMap = new HashMap(); 
+    //For algorithm running, for multiple_VA, each agent has only one variable; for OC, each agent holds the exact variables belonging to it;
+    //for hybridization,  an agent is a virtual agent that holds the variables in its clusters after redistributing the variables inside an agent
     protected static HashMap<Integer, ArrayList<Integer>> agentVarMap = new HashMap(); 
     //For multiple_VA, this is the map between real agent and variable
     protected HashMap<Integer, ArrayList<Integer>> realAgentVarMap = new HashMap(); 
     
     /**calculated**/
-    protected HashMap<Integer, ArrayList<Integer>> agentPrincipalVarMap = new HashMap();
+    protected static HashMap<Integer, ArrayList<Integer>> agentPrincipalVarMap = new HashMap();
+    protected HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> agentStrongPrincipalVarMap = new HashMap();
     protected HashMap<Integer, Boolean> agentHasInitialized = new HashMap();
-//    protected HashMap<Integer, ArrayList<Integer>> agentLocalVarMap = new HashMap();
-    
+    protected HashMap<Integer, List<Integer>> agentChildrenMap = new HashMap();
+    protected HashMap<Integer, HashMap<Integer, List<Integer>>> agentChildDescendMap = new HashMap();
     
     private HashMap<String, Object> metadata = new HashMap<>();  
     protected int numvars;
-    protected ImmutableSetOfIntegers[] agentDomain;
+//    protected ImmutableSetOfIntegers[] agentDomain;
+    protected HashMap<Integer, Integer> agentDomainSize;
     protected ConstraintsPackage constraintsOnVars;
     protected AgentConstraintPackage constraintsOnAgents;
     protected static ImmutableSetOfIntegers[] varDomain;
@@ -73,7 +81,7 @@ public class Problem implements ImmutableProblem {
     /****************** Agent layer start ******************/
     /************agent numbers**************/
     public int getNumberOfAgents() {
-        return this.agentDomain.length; 
+        return this.agentDomainSize.size(); 
     }
     /************agent status**************/
     public boolean hasAgentInitialized(int agentID) {
@@ -81,6 +89,16 @@ public class Problem implements ImmutableProblem {
     }
     public boolean setAgentInitialized(int agentID) {
     	return agentHasInitialized.put(agentID, true);
+    }
+    
+    public boolean hasAllInitialized() {
+    	boolean allInitialized = true;
+    	for(int agentID: agentVarMap.keySet()) {
+    		if(!hasAgentInitialized(agentID)) {
+    			allInitialized = false;
+    		}
+    	}
+    	return allInitialized;
     }
     /************domains**************/
     /**
@@ -90,16 +108,18 @@ public class Problem implements ImmutableProblem {
      * @return
      */
     public int getAgentDomainSize(int agent) {
-        return getAgentDomainOf(agent).size();
+    	return this.agentDomainSize.get(agent);
     }
+//    public int getAgentDomainSize(int agent) {
+//        return getAgentDomainOf(agent).size();
+//    }
 
     /**
      * return the agentDomain that belongs to agent
      */
-    public ImmutableSet<Integer> getAgentDomainOf(int agent) {
-        return agentDomain[agent];
-        
-    }
+//    public ImmutableSet<Integer> getAgentDomainOf(int agent) {
+//        return agentDomain[agent];   
+//    }
     /************my variables**************/
     /**
      * Get the variable Ids that belongs to given agentId
@@ -108,37 +128,108 @@ public class Problem implements ImmutableProblem {
         return agentVarMap.get(agentId);
     }
         
-    public void setPrincipalVariables(int agentID, ArrayList<Integer> principleVars) {
-//    	agentPrincipalVarMap.remove(agentID);
+    /** tree structure **/
+	public void setChildren(int agent, List<Integer> children) {
+		agentChildrenMap.put(agent, children);
+		
+	}
+	
+	public List<Integer> getChildren(int agent) {
+		return agentChildrenMap.get(agent);
+	}
+	
+	public void setChildDescendMap(int agent,
+			HashMap<Integer, List<Integer>> childDescendMap) {
+		agentChildDescendMap.put(agent, childDescendMap);
+		
+	}
+
+	public HashMap<Integer, List<Integer>> getChildDescendMap(int agent) {
+		// TODO Auto-generated method stub
+		return agentChildDescendMap.get(agent);
+	}
+	
+    public void setWeakPrincipalVariables(int agentID, ArrayList<Integer> principleVars) {
     	agentPrincipalVarMap.put(agentID, principleVars);
     }
     
-    public int getPrincipalVarsHashValue(int agentID, int hashVal) {
+    public int getWeakPrincipalVarsHashValue(int agentID, int hashVal) {
     	int principleVarsHashVal = 0;
     	Integer[] myVarsValues = parseAgentValue(agentID, hashVal);
     	ArrayList<Integer> myVars = agentVarMap.get(agentID);
-//    	if (!agentPrincipalVarMap.containsKey(agentID)) {
-//    		return hashVal;
-//    	}
-//    	else {
-        	List<Integer> myPrincipalVars = agentPrincipalVarMap.get(agentID);
-        	int myPrincipalVarNum = myPrincipalVars.size();
-        	int varDom = getVarDomain().size();
-        	int count = 0;
-        	for (int i = 0; i < myVars.size(); i++) {
-        		int myVarID = myVars.get(i);
-        		if (myPrincipalVars.contains(myVarID)) {
-        			count ++;
-        			principleVarsHashVal += myVarsValues[i] * Math.pow(varDom, myPrincipalVarNum - count);
-        		}
-        	} 	
-        	return principleVarsHashVal;
-//    	}
+
+    	List<Integer> myPrincipalVars = agentPrincipalVarMap.get(agentID);
+    	int myPrincipalVarNum = myPrincipalVars.size();
+    	int varDom = getVarDomain().size();
+    	int count = 0;
+    	for (int i = 0; i < myVars.size(); i++) {
+    		int myVarID = myVars.get(i);
+    		if (myPrincipalVars.contains(myVarID)) {
+    			count ++;
+    			principleVarsHashVal += myVarsValues[i] * Math.pow(varDom, myPrincipalVarNum - count);
+    		}
+    	} 	
+    	return principleVarsHashVal;
+
+    }
+    
+    public ArrayList<Integer> getFullValListFromExternalVal(int agentID, int exterVal) {
+    	ArrayList<Integer> fullValues = new ArrayList();
+    	for(int i = 0; i < this.getAgentDomainSize(agentID); i++){
+    		int myExternalValue = getWeakPrincipalVarsHashValue(agentID, i);
+    		if(myExternalValue == exterVal) {
+    			fullValues.add(i);
+    		}
+    	}
+    	
+    	return fullValues;
+
     }
     
     
-    public List<Integer> getPrincipalVariables(int agentId) {
+    public List<Integer> getWeakPrincipalVariables(int agentId) {
     	return agentPrincipalVarMap.get(agentId);
+    }
+    
+	public void setStrongPrincipalVariables(int agentId,
+			HashMap<Integer, ArrayList<Integer>> childPrincipleVarsMap) {
+		agentStrongPrincipalVarMap.put(agentId, childPrincipleVarsMap);
+//		ArrayList<Integer> allWeakPrincipalVars = new ArrayList();
+//		for(int child : childPrincipleVarsMap.keySet()) {
+//			ArrayList<Integer> strongPrincipalVars = childPrincipleVarsMap.get(child);
+//			for(int strongPrincipalVar : strongPrincipalVars) {
+//				if(!allWeakPrincipalVars.contains(strongPrincipalVar)) {
+//					allWeakPrincipalVars.add(strongPrincipalVar);
+//				}
+//			}
+//		}
+//		agentPrincipalVarMap.put(agentId, allWeakPrincipalVars);
+		
+	}
+	
+    public List<Integer> getStrongPrincipalVariables(int agentId, int child) {
+    	return agentStrongPrincipalVarMap.get(agentId).get(child);
+    }
+    
+    public int getStrongPrincipalVarsHashValue(int agentID, int child, int hashVal) {
+
+    	int principleVarsHashVal = 0;
+    	Integer[] myVarsValues = parseAgentValue(agentID, hashVal);
+    	ArrayList<Integer> myVars = agentVarMap.get(agentID);
+
+    	List<Integer> myPrincipalVars = agentStrongPrincipalVarMap.get(agentID).get(child);
+    	int myPrincipalVarNum = myPrincipalVars.size();
+    	int varDom = getVarDomain().size();
+    	int count = 0;
+    	for (int i = 0; i < myVars.size(); i++) {
+    		int myVarID = myVars.get(i);
+    		if (myPrincipalVars.contains(myVarID)) {
+    			count ++;
+    			principleVarsHashVal += myVarsValues[i] * Math.pow(varDom, myPrincipalVarNum - count);
+    		}
+    	} 	
+    	return principleVarsHashVal;
+
     }
     /************neighbors**************/
     /**
@@ -170,6 +261,18 @@ public class Problem implements ImmutableProblem {
     	int cost = 0;
     	int cc = 0;
         ConstraintCheckResult result = new ConstraintCheckResult();
+        
+        // Unary costs between agents
+        for(int i = 0; i < myVars.size(); i++) {
+        	int varID = myVars.get(i);
+        	int val = myVarsValues[i];
+        	constraintsOnVars.getConstraintCost(varID, varID, val, result);
+    		cost += result.getCost();
+    		cc += result.getCheckCost();
+        }
+        
+        
+        // Binary costs between agents
     	for(int i = 0; i < myVars.size(); i++) {
     		int varID1 = myVars.get(i);
     		int val1 = myVarsValues[i];
@@ -211,12 +314,18 @@ public class Problem implements ImmutableProblem {
     }
     
 	public static Integer[] parseAgentValue(int agentID, int agentValue){
-		ArrayList<Integer> myVars = agentVarMap.get(agentID);	
+		ArrayList<Integer> myVars = agentVarMap.get(agentID);
 		int varNum = myVars.size();
+		Integer[] parsedValue = new Integer[varNum];
+		if(1 == varNum){
+			parsedValue[0] = agentValue;
+			return parsedValue;
+		}
+		
 		int varDom = getVarDomain().size();
 		int last = 0;
 		int remain = agentValue;
-		Integer[] parsedValue = new Integer[varNum];
+		
 		for(int i = 0; i < varNum; i++){
 			last = remain % varDom;
 			remain = remain / varDom;
@@ -224,6 +333,21 @@ public class Problem implements ImmutableProblem {
 		}
 		return parsedValue;	
 	}
+	
+//	public static Integer[] parseAgentExternalValue(int agentID, int agentExternalValue){
+//		ArrayList<Integer> myExternalVars = agentPrincipalVarMap.get(agentID);	
+//		int varNum = myExternalVars.size();
+//		int varDom = getVarDomain().size();
+//		int last = 0;
+//		int remain = agentExternalValue;
+//		Integer[] parsedValue = new Integer[varNum];
+//		for(int i = 0; i < varNum; i++){
+//			last = remain % varDom;
+//			remain = remain / varDom;
+//			parsedValue[varNum - i - 1] = last;
+//		}
+//		return parsedValue;	
+//	}
 
    
     /****************** Agent layer finish ******************/
@@ -408,7 +532,34 @@ public class Problem implements ImmutableProblem {
      * @return
      */
     public void calculateCost(int owner, Assignment assignment, ConstraintCheckResult result) {
-    	constraintsOnVars.calculateCost(owner, assignment, result);
+//    	constraintsOnVars.calculateCost(owner, assignment, result);
+    	calculateCostOnAgents(assignment, result);
+    }
+    
+    public void calculateCostOnAgents(Assignment assignment, ConstraintCheckResult result) {
+        int c = 0;
+        int cc = 0;
+
+        LinkedList<Map.Entry<Integer, Integer>> past = new LinkedList<Map.Entry<Integer, Integer>>();
+        for (Map.Entry<Integer, Integer> e : assignment.getAssignments()) {
+            int var = e.getKey();
+            int val = e.getValue();
+            getAgentConstraintCost(var, val, result);
+            c += result.getCost();
+            cc += result.getCheckCost();
+
+            for (Map.Entry<Integer, Integer> pe : past) {
+                int pvar = pe.getKey();
+                int pval = pe.getValue();
+
+                getAgentConstraintCost(pvar, pval, var, val, result);
+                c += result.getCost();
+                cc += result.getCheckCost();
+            }
+            past.add(e);
+        }
+
+        result.set(c, cc);
     }
 
     public int calculateGlobalCost(Assignment a) {
@@ -447,23 +598,13 @@ public class Problem implements ImmutableProblem {
      */
     protected void initialize(ProblemType type, List<? extends Set<Integer>> agentDomains, boolean singleDomain) {
         this.singleDomain = singleDomain;
-        this.agentDomain = ImmutableSetOfIntegers.arrayOf(agentDomains);
+//        this.agentDomain = ImmutableSetOfIntegers.arrayOf(agentDomains);
         this.type = type;
         
-        if (modelType != ModelType.multiple_OC) {  // If not OC, numvars is the number of variables
-        	this.varDomain = agentDomain;
-            this.numvars = this.varDomain.length;
-            int maxDomainSize = 0;
-            for(ImmutableSetOfIntegers dom : this.agentDomain){
-            	if(maxDomainSize < dom.size()){
-            		maxDomainSize = dom.size();
-            	}
-            }
-            createAgentVarMapOfVariblesSize(numvars);
-        	this.constraintsOnVars = type.newConstraintPackage(numvars, maxDomainSize); 
-        	this.constraintsOnAgents = new AgentConstraintPackage(this.agentDomain.length);
-        }
-        else { // If OC, numvars here actually represents the number of agents
+        if (modelType != ModelType.multiple_OC && modelType != ModelType.hybridize) {  // If not OC, numvars is the number of variables
+//        	this.agentDomain = ImmutableSetOfIntegers.arrayOf(agentDomains);
+//        	this.varDomain = agentDomain;
+        	this.varDomain = ImmutableSetOfIntegers.arrayOf(agentDomains);
             this.numvars = this.varDomain.length;
             int maxDomainSize = 0;
             for(ImmutableSetOfIntegers dom : this.varDomain){
@@ -471,14 +612,53 @@ public class Problem implements ImmutableProblem {
             		maxDomainSize = dom.size();
             	}
             }
+            createAgentVarMapOfVariblesSize(numvars);
+
         	this.constraintsOnVars = type.newConstraintPackage(numvars, maxDomainSize); 
-        	this.constraintsOnAgents = new AgentConstraintPackage(this.agentDomain.length);
+        	this.constraintsOnAgents = new AgentConstraintPackage(this.varDomain.length);
+        }
+        else { // If OC, numvars here actually represents the number of agents
+        	if(modelType != ModelType.hybridize){
+                this.numvars = this.varDomain.length;
+                int maxDomainSize = 0;
+                for(ImmutableSetOfIntegers dom : this.varDomain){
+                	if(maxDomainSize < dom.size()){
+                		maxDomainSize = dom.size();
+                	}
+                }
+            	this.constraintsOnVars = type.newConstraintPackage(numvars, maxDomainSize); 
+            	this.constraintsOnAgents = new AgentConstraintPackage(agentDomains.size());
+            	
+            	this.agentDomainSize = new HashMap();
+                ArrayList<Integer> varsInAgent = new ArrayList();
+                int agentDomainSize = 1;
+                for(int k = 0; k < agentVarMap.size(); k++) {
+                    varsInAgent = agentVarMap.get(k);
+                    agentDomainSize = 1;
+                    for(int varID : varsInAgent) {
+                        int varDom = this.getVarDomainSize(varID);
+                        agentDomainSize *= varDom;
+                    }
+                    this.agentDomainSize.put(k, agentDomainSize);
+                }
+        	}
+        	else{
+                this.numvars = this.varDomain.length;
+                int maxDomainSize = 0;
+                for(ImmutableSetOfIntegers dom : this.varDomain){
+                	if(maxDomainSize < dom.size()){
+                		maxDomainSize = dom.size();
+                	}
+                }
+            	this.constraintsOnVars = type.newConstraintPackage(numvars, maxDomainSize); 
+      
+        	}
+
         }
         
         
     }
     
-
     /**
      * initialize the problem with multiple domains the number of variables is
      * the agentDomain.size()
@@ -530,6 +710,12 @@ public class Problem implements ImmutableProblem {
         initialize(type, agentDomain);
     	agentVarMap = runningAgentVarMap;
     	realAgentVarMap = trueAgentVarMap;
+    	
+    	this.agentDomainSize = new HashMap();
+    	for(int agent : agentVarMap.keySet()){
+    		agentDomainSize.put(agent, getVarDomainSize(agent));
+    	}
+    	
     }
     
     /**
@@ -546,12 +732,19 @@ public class Problem implements ImmutableProblem {
     public void initialize(ProblemType type, int numberOfVariables, List<? extends Set<Integer>> agentDomain,
     		HashMap varDomainMap, ModelType model, HashMap runningAgentVarMap, HashMap trueAgentVarMap) {
     	modelType = model;
-    	agentVarMap = runningAgentVarMap;
+//    	intAgentVarMap = runningAgentVarMap;
     	realAgentVarMap = trueAgentVarMap;
     	
-    	for (int agentID : agentVarMap.keySet()) {
-    		agentHasInitialized.put(agentID, false);
+    	if(modelType != ModelType.hybridize){
+    		agentVarMap = runningAgentVarMap;
+        	for (int agentID : agentVarMap.keySet()) {
+        		agentHasInitialized.put(agentID, false);
+        	}
     	}
+    	else{
+    		intAgentVarMap = runningAgentVarMap;
+    	}
+
 //    	agentPrincipalVarMap = agentVarMap;  // initialize all the varibles as principal variables at first
     	List<Set<Integer>> varDomains = new ArrayList();
     	for (int varID = 0; varID < varDomainMap.size(); varID++) {
@@ -561,7 +754,7 @@ public class Problem implements ImmutableProblem {
     	}
     	this.varDomain = ImmutableSetOfIntegers.arrayOf(varDomains);
     	initialize(type, agentDomain);
-    }
+    }    
     
     public void setupAgentNeighbors(){
     	boolean isConstrained = false;
@@ -590,6 +783,126 @@ public class Problem implements ImmutableProblem {
     		}
     		
     	}
+    }
+    
+    public void Hybridize(int domainsizeThreshold, double connThreshold){
+    	HashMap<Integer, ArrayList<Integer>> newAgentVarMap = new HashMap();
+    	int count = 0;
+    	for(int agent : intAgentVarMap.keySet()){
+    		ArrayList<Integer> myVariables = intAgentVarMap.get(agent);
+    		ArrayList<ArrayList<Integer>> clusters = GraphSplit(agent, myVariables, 
+    				domainsizeThreshold, connThreshold);
+    		for(ArrayList<Integer> aCluster : clusters){
+    			newAgentVarMap.put(count, aCluster);
+    			count ++;
+    		}
+    	}
+    	agentVarMap = newAgentVarMap;
+    	extraInitialization();
+    }
+    
+    private void extraInitialization(){
+    	this.constraintsOnAgents = new AgentConstraintPackage(agentVarMap.size());
+    	for (int agentID : agentVarMap.keySet()) {
+    		agentHasInitialized.put(agentID, false);
+    	}
+    		
+      int agentNum = agentVarMap.size();
+      int agentDomainSize = 1;
+      this.agentDomainSize = new HashMap();
+      ArrayList<Integer> varsInAgent = new ArrayList();
+      for(int k = 0; k < agentNum; k++) {
+          varsInAgent = agentVarMap.get(k);
+          agentDomainSize = 1;
+          for(int varID : varsInAgent) {
+              int varDom = this.getVarDomainSize(varID);
+              agentDomainSize *= varDom;
+          }
+          this.agentDomainSize.put(k, agentDomainSize);
+      }
+    	
+    }
+    
+    private ArrayList<ArrayList<Integer>> GraphSplit(int agentID, ArrayList<Integer> G, int sizeThresh, double connThresh){
+    	ArrayList<Integer> Q = (ArrayList<Integer>) G.clone();
+    	ArrayList<ArrayList<Integer>> sets = new ArrayList();
+    	ArrayList<Integer> S = new ArrayList();
+    	ArrayList<Integer> tempS = new ArrayList();
+    	while(Q.size() > 0) {
+    		int v = nextNode(Q, S);
+    		tempS = (ArrayList<Integer>) S.clone();
+    		tempS.add(v);
+    		if(compiledDomainsize(tempS, agentID) <= sizeThresh 
+    				&& connectivity(tempS) >= connThresh){
+    			S = tempS;
+    		}
+    		else{
+    			sets.add((ArrayList<Integer>) S.clone());
+    			S.clear();
+    			S.add(v);
+    		}
+    		
+    		for(int i = 0; i < Q.size(); i++){
+    			if(Q.get(i) == v){
+    				Q.remove(i);
+    			}
+    		}
+//    		Q.remove(v);
+    	}
+    	if(S.size() > 0) {
+    		sets.add(S);
+    	}
+    	return sets;
+    }
+    
+    private int nextNode(ArrayList<Integer> Q, ArrayList<Integer> S){
+    	double maxConn = 0;
+    	int v = -1;
+    	int index = -1;
+    	ArrayList<Integer> tempS = new ArrayList();
+    	for (int i = 0; i < Q.size(); i++) {
+    		int w = Q.get(i);
+    		tempS = (ArrayList<Integer>) S.clone();
+    		tempS.add(w);
+    		double tempConn = connectivity(tempS);
+    		if(tempConn >= maxConn) {
+    			v = w;
+    			index = i;
+    			maxConn = tempConn;
+    		}
+    	}
+//    	if(index != -1){
+//    		Q.remove(index);
+//    	}
+    	
+    	return v;
+    }
+    
+    private double connectivity(ArrayList<Integer> S){
+    	int size = S.size();
+    	double constraintNum = 0;
+    	for(int i = 0; i < size; i++){
+    		int v = S.get(i);
+    		for(int j = i+1; j < size; j++){
+    			int w = S.get(j);
+    			if(this.isVarConstrained(v, w)){
+    				constraintNum ++;
+    			}
+    		}
+    	}
+    	double fullConn = (double)size * (size -1) / 2;
+    	if(fullConn == 0){
+    		return 1;
+    	}
+    	return constraintNum/fullConn;
+    }
+    
+    private int compiledDomainsize(ArrayList<Integer> tempS, int agentID){  // currently only all the domainsize
+    	int dom = 1;
+    	for(int v : tempS){
+    		dom *= this.getVarDomainSize(v);
+    	}
+    	return dom;
     }
     
     /************************End of problem initialization*****************************************/
@@ -655,13 +968,26 @@ public class Problem implements ImmutableProblem {
     	if (modelType == ModelType.multiple_OC) {
     		return id;
     	}
-    	for(int agent: realAgentVarMap.keySet()){
-    		for(int myVarID : realAgentVarMap.get(agent)){
-    			if(myVarID == id) {
-    				return agent;
+    	if (modelType == ModelType.multiple_VA) {
+        	for(int agent: realAgentVarMap.keySet()){
+        		for(int myVarID : realAgentVarMap.get(agent)){
+        			if(myVarID == id) {
+        				return agent;
+        			}
+        		}
+        	}
+    	}
+    	if(modelType == ModelType.hybridize) {
+    		int oneOfMyVar = this.getVariables(id).get(0);
+    		for(int agent: realAgentVarMap.keySet()){
+    			for(int myVarID : realAgentVarMap.get(agent)){
+    				if(myVarID == oneOfMyVar){
+    					return agent;
+    				}
     			}
     		}
     	}
+
     	return -1;
     }
 
@@ -684,7 +1010,5 @@ public class Problem implements ImmutableProblem {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
-
-
 
 }

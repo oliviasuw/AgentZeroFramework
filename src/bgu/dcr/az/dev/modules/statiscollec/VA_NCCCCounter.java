@@ -79,7 +79,7 @@ public class VA_NCCCCounter extends AbstractStatisticCollector<VA_NCCCCounter.My
     @Override
     public void hookIn(final Agent[] agents, final Execution ex) {
     	int fileNo = (int) test.getCurrentVarValue();
-    	File dir = new File("problems");
+    	File dir = new File("../problems");
     	File[] files = dir.listFiles();
     	final String testFile = files[fileNo-1].getName();
     	this.agents = agents;  //virtual agents

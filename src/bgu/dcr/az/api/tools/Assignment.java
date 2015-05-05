@@ -279,7 +279,7 @@ public class Assignment implements Serializable, DeepCopyable {
     }
 
     public boolean isFull(ImmutableProblem problem) {
-        return getNumberOfAssignedVariables() == problem.getNumberOfVars();
+        return getNumberOfAssignedVariables() == problem.getNumberOfAgents();
     }
 
     /**

@@ -587,13 +587,13 @@ public abstract class Agent extends Agt0DSL {
         return getProblem().getVarDomainOf(var);
     }
     
-    /**
-     * @param agent
-     * @return the domain of some agent in the current problem
-     */
-    public ImmutableSet<Integer> getAgentDomainOf(int agent) {
-        return getProblem().getAgentDomainOf(agent);
-    }
+//    /**
+//     * @param agent
+//     * @return the domain of some agent in the current problem
+//     */
+//    public ImmutableSet<Integer> getAgentDomainOf(int agent) {
+//        return getProblem().getAgentDomainOf(agent);
+//    }
 
     /**
      * @return this agents full domain - as immutable set - if you need to
@@ -604,9 +604,9 @@ public abstract class Agent extends Agt0DSL {
         return getProblem().getVarDomainOf(getId());
     }
     
-    public ImmutableSet<Integer> getAgentDomain() {
-        return getProblem().getAgentDomainOf(getId());
-    }
+//    public ImmutableSet<Integer> getAgentDomain() {
+//        return getProblem().getAgentDomainOf(getId());
+//    }
 
     /**
      * same as getDomain().size()
@@ -618,7 +618,13 @@ public abstract class Agent extends Agt0DSL {
     }
     
     public int getAgentDomainSize() {
-        return getAgentDomainOf(getId()).size();
+    	return getProblem().getAgentDomainSize(getId());
+//        return getAgentDomainOf(getId()).size();
+    }
+    
+    public int getAgentDomainSize(int agentID) {
+    	return getProblem().getAgentDomainSize(agentID);
+//        return getAgentDomainOf(getId()).size();
     }
 
     /**
@@ -1075,10 +1081,10 @@ public abstract class Agent extends Agt0DSL {
 		/* (non-Javadoc)
 		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainOf(int)
 		 */
-		@Override
-		public ImmutableSet<Integer> getAgentDomainOf(int agent) {
-			return pops.exec.getGlobalProblem().getAgentDomainOf(agent);
-		}
+//		@Override
+//		public ImmutableSet<Integer> getAgentDomainOf(int agent) {
+//			return pops.exec.getGlobalProblem().getAgentDomainOf(agent);
+//		}
 
 		/* (non-Javadoc)
 		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getAgentDomainSize(int)
@@ -1126,36 +1132,6 @@ public abstract class Agent extends Agt0DSL {
             return queryTemp.getCost();
 		}
 
-		/* (non-Javadoc)
-		 * @see bgu.dcr.az.api.prob.ImmutableProblem#setExternalVariables(int)
-		 */
-		@Override
-		public void setPrincipalVariables(int agentId, ArrayList<Integer> externalVars) {
-			// TODO Auto-generated method stub
-			pops.exec.getGlobalProblem().setPrincipalVariables(agentId, externalVars);
-		}
-
-		/* (non-Javadoc)
-		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getExternalVariables(int)
-		 */
-		@Override
-		public List<Integer> getPrincipalVariables(int agentId) {
-			// TODO Auto-generated method stub
-			return pops.exec.getGlobalProblem().getPrincipalVariables(agentId);
-		}
-
-		/* (non-Javadoc)
-		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getPrincipalVarsHashValue(int, int)
-		 */
-		@Override
-		public int getPrincipalVarsHashValue(int agentID, int hashVal) {
-			// TODO Auto-generated method stub
-			return pops.exec.getGlobalProblem().getPrincipalVarsHashValue(agentID, hashVal);
-		}
-
-		/* (non-Javadoc)
-		 * @see bgu.dcr.az.api.prob.ImmutableProblem#hasAgentInitialized(int)
-		 */
 		@Override
 		public boolean hasAgentInitialized(int agentID) {
 			// TODO Auto-generated method stub
@@ -1170,6 +1146,100 @@ public abstract class Agent extends Agt0DSL {
 			// TODO Auto-generated method stub
 			return pops.exec.getGlobalProblem().setAgentInitialized(agentID);
 		}
+		/** weak principal **/
+		@Override
+		public void setWeakPrincipalVariables(int agentId, ArrayList<Integer> externalVars) {
+			// TODO Auto-generated method stub
+			pops.exec.getGlobalProblem().setWeakPrincipalVariables(agentId, externalVars);
+		}
+
+		@Override
+		public List<Integer> getWeakPrincipalVariables(int agentId) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getWeakPrincipalVariables(agentId);
+		}
+
+		@Override
+		public int getWeakPrincipalVarsHashValue(int agentID, int hashVal) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getWeakPrincipalVarsHashValue(agentID, hashVal);
+		}
+		
+		/** strong principal **/
+		@Override
+		public void setStrongPrincipalVariables(int agentId,
+				HashMap<Integer, ArrayList<Integer>> childPrincipleVarsMap) {
+			pops.exec.getGlobalProblem().setStrongPrincipalVariables(agentId, childPrincipleVarsMap);
+		}
+
+		@Override
+		public int getStrongPrincipalVarsHashValue(int agentID, int child, int hashVal) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getStrongPrincipalVarsHashValue(agentID, child, hashVal);
+		}
+
+		@Override
+		public List<Integer> getStrongPrincipalVariables(int agentId, int child) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getStrongPrincipalVariables(agentId, child);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#hasAllInitialized()
+		 */
+		@Override
+		public boolean hasAllInitialized() {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().hasAllInitialized();
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#setChildren(int, java.util.ArrayList)
+		 */
+		@Override
+		public void setChildren(int agent, List<Integer> children) {
+			pops.exec.getGlobalProblem().setChildren(agent, children);
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getChildren(int)
+		 */
+		@Override
+		public List<Integer> getChildren(int agent) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getChildren(agent);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#setChildDescendMap(int, java.util.HashMap)
+		 */
+		@Override
+		public void setChildDescendMap(int agent,
+				HashMap<Integer, List<Integer>> childDescendMap) {
+			pops.exec.getGlobalProblem().setChildDescendMap(agent, childDescendMap);
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getChildDescendMap(int)
+		 */
+		@Override
+		public HashMap<Integer, List<Integer>> getChildDescendMap(int agent) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getChildDescendMap(agent);
+		}
+
+		/* (non-Javadoc)
+		 * @see bgu.dcr.az.api.prob.ImmutableProblem#getFullValListFromExternalVal(int, int)
+		 */
+		@Override
+		public ArrayList<Integer> getFullValListFromExternalVal(int agentID,
+				int exterVal) {
+			// TODO Auto-generated method stub
+			return pops.exec.getGlobalProblem().getFullValListFromExternalVal(agentID, exterVal);
+		}
+		
 
     }
 }

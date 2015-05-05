@@ -100,7 +100,7 @@ public class TERMINATEMessageCounter extends AbstractStatisticCollector<TERMINAT
 
     	counts = new long[agents.length];
     	int fileNo = (int) test.getCurrentVarValue();
-    	File dir = new File("problems");
+    	File dir = new File("../problems");
     	File[] files = dir.listFiles();
     	final String testFile = files[fileNo-1].getName();
         switch(agentType){

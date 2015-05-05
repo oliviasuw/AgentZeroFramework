@@ -127,7 +127,7 @@ public class TimeStamp implements Serializable, DeepCopyable {
      * @return 1 if this > other, 0 if equals and -1 otherwise.
      */
     public int compare(TimeStamp o, Agent asking) {
-        for (int i = 0; i < asking.getId(); i++) {
+        for (int i = 0; i <= asking.getId(); i++) { // modified by Chris
             if (this.id[i] > o.id[i]) {
                 return 1;
             }

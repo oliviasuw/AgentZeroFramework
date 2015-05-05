@@ -1,8 +1,8 @@
 /**
- * ACConstruct.java
+ * ACConstruct_AFB.java
    Created by Su Wen
-   Date: Dec 21, 2014
-   Time: 9:09:22 PM 
+   Date: Mar 29, 2015
+   Time: 4:19:06 PM 
  */
 package bgu.dcr.az.dev.constructs;
 
@@ -10,16 +10,18 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 import bgu.dcr.az.api.Agent;
 import bgu.dcr.az.api.ds.ImmutableSet;
 import bgu.dcr.az.api.prob.ImmutableProblem;
+import bgu.dcr.az.api.prob.Problem;
 import bgu.dcr.az.api.tools.DFSPsaudoTree;
 import bgu.dcr.az.dev.agents.AC_BnBAdoptPlusAgent;
 
-public class ACConstruct {
+public class ACConstruct_AFB {
 	
 	public final static int MAX_PROJECTION_NUM_RECORDED = 1000;
 	
@@ -68,13 +70,14 @@ public class ACConstruct {
     public Vector<BinaryConstraint> constraints;
     
     // global top and cPhi
-    public double global_top;
-    public double global_cPhi;
+//    public double global_top;
+//    public double global_cPhi;
     
-    public ACConstruct(Agent agent, DFSPsaudoTree tree){
-
-        depth = tree.getDepth();
+    public ACConstruct_AFB(Agent agent){
+    	ImmutableProblem prob = agent.getProblem();
+    	
         agentID = agent.getId();
+        depth = agentID;  // Here, we only consider alphabetically ordered tree
         
 //    	File file = new File("costs.txt");
 //        FileWriter fileWriter = null;
@@ -94,12 +97,12 @@ public class ACConstruct {
         }
         
         myContribution = 0;
-        neighbors = tree.getNeighbors();
+        neighbors = new ArrayList<Integer>(prob.getAgentNeighbors(agentID));
         neighborsDomains = new Vector();
         neighborsPruned = new Vector();
         
         constraints = new Vector();
-        global_top = Double.MAX_VALUE;
+//        global_top = Double.MAX_VALUE;
 
         ACRecordsProjectFromMe = new Integer[neighbors.size()];
         ACRecordsProjectToMe = new Integer[neighbors.size()];
@@ -110,8 +113,8 @@ public class ACConstruct {
 
         	
         	int currentNeighbor = neighbors.get(i);
-//        	int neighborDomainSize = agent.getAgentDomainOf(currentNeighbor).size();
         	int neighborDomainSize = agent.getAgentDomainSize(currentNeighbor);
+
         	
         	P_records[i] = new Double[MAX_PROJECTION_NUM_RECORDED][];
         	P_records[i][ACRecordsProjectFromMe[i]] = new Double[neighborDomainSize];
@@ -138,15 +141,12 @@ public class ACConstruct {
         	pruned[i] = false;
         }
         
-        ImmutableProblem prob = agent.getProblem();
         for(int neighbor : neighbors) {
         	BinaryConstraint binaryCon = new BinaryConstraint();
         	binaryCon.varA = agentID;
         	binaryCon.varB = neighbor;
         	binaryCon.nogoods = new Vector();
-//        	for(int val1 : agent.getAgentDomainOf(agentID)){
-//        		for(int val2 : agent.getAgentDomainOf(neighbor)){
-        	for(int val1 = 0; val1 < agent.getAgentDomainSize(agentID); val1++){
+        	for(int val1= 0; val1 < agent.getAgentDomainSize(agentID); val1++){
         		for(int val2 = 0; val2 < agent.getAgentDomainSize(neighbor); val2++){
         			int cost = agent.getAgentConstraintCost(agentID, val1, neighbor, val2);
         			Nogood nogood = new Nogood();
@@ -158,12 +158,10 @@ public class ACConstruct {
         	}
         	constraints.add(binaryCon);
         }
-    }
-    
-    public ACConstruct() {
+    } 
+    public ACConstruct_AFB() {
         
-    }   
-
+    } 
 	public BinaryConstraint getConstraint(int neighbor){
     	for(BinaryConstraint binaryCon : constraints){
     		if(binaryCon.varB == neighbor){
@@ -344,3 +342,4 @@ public class ACConstruct {
      
     
 }
+
