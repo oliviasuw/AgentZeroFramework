@@ -201,11 +201,7 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
 //    		long msgtime = ((Long) msg.getMetadata().get("nccc")).intValue();
 //    		System.out.println("Msg Time: " + msgtime);
 //    	}
-    	//debug
-    	if(debug && getId() == 2) {
-    		System.out.println("In variable #" + getId() + "# LB:" + LB
-    				+" UB:" + UB);
-    	}
+
 
         for(int i = 0; i < getAgentDomainSize(); i++){
             LBD[i] = calcDelta(i) + sumlbORub(lbChildD, i);
@@ -214,6 +210,16 @@ public class BnBAdoptPlusAgent extends SimpleAgent {
         LB = findMinimum(LBD, 1, 0);
         UB = findMinimum(UBD, 1, 0);
         
+    	//debug
+    	if(debug) {
+    		System.out.println("BK #" + getId() + "# LB:" + LB
+    				+" UB:" + UB);
+        	System.out.println("####cpa:####");
+        	for(int key : cpa.keySet()){
+        		System.out.println("var: " + key + " val: " + cpa.get(key).value + " ID: "+ 
+        	cpa.get(key).ID);
+        	}
+    	}
 
         if(LBD[d] >= min(TH, UB)){
             d = findMinimum(LBD, 2, d);
