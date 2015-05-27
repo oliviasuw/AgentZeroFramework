@@ -1,10 +1,16 @@
 /**
+ * AC_BnBAdoptPlusAgent_OC_Principal.java
+   Created by Su Wen
+   Date: Mar 28, 2015
+   Time: 10:18:58 PM 
+ */
+/**
  * AC_BnBAdoptAgent.java
    Created by Su Wen
    Date: Dec 20, 2014
    Time: 4:27:19 PM 
  */
-package bgu.dcr.az.dev.agents;
+package bgu.dcr.az.dev.softAC;
 
 import bgu.dcr.az.api.Continuation;
 import bgu.dcr.az.api.agt.SimpleAgent;
@@ -22,14 +28,8 @@ import java.util.*;
 import confs.Counter;
 import confs.defs;
 
-/**
- * 
- * @author Su Wen
- * Suitable for VA, PC, OC methods
- *
- */
-@Algorithm(name="AC_BnBAdoptPlusAgent", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
-public class AC_BnBAdoptPlusAgent extends SimpleAgent {
+@Algorithm(name="AC_BnBAdoptPlusAgent_OC_Principal", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
+public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
 
 	boolean debug = false;
 	boolean TERMINATE_CONTROL = true;
@@ -37,7 +37,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
     /** Structures for BnB-ADOPT+ only **/
     boolean PlusOn = true;
     // key: child/pseudochild ID; value: lastSentVALUE
-    HashMap<Integer, Integer> lastSentVALUEs = new HashMap();
+    HashMap<Integer, Integer> lastSentPrinHashVALUEs = new HashMap();
     // key: parent ID; value: lastSentCOST
     HashMap<Integer, AssignmentInfo> lastSentCPA = new HashMap<>();
     boolean cpaChanged = false;
@@ -118,7 +118,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
 
     //get the SCA of a child
     public Set<Integer> getSCA(){
-        Set<Integer> _SCA = new HashSet();
+        Set<Integer> _SCA = new HashSet<>();
         for(int ancestor : tree.getAncestors()){
             if(getProblem().getAgentNeighbors(getId()).contains(ancestor))
                 _SCA.add(ancestor);
@@ -136,7 +136,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
     }
 
     public Set<Integer> getSCA(int id){
-        Set<Integer> _SCA = new HashSet();
+        Set<Integer> _SCA = new HashSet<>();
         _SCA.add(getId());
         for(int ancestor : tree.getAncestors()){
             if(getProblem().getAgentNeighbors(id).contains(ancestor))
@@ -159,7 +159,34 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
         ubChildD[child][val] = Integer.MAX_VALUE;
     }
 
+    private ArrayList<Integer> identifyPrincipalVars () {
+    	List<Integer> myVars = getProblem().getVariables(getId());
+    	List<Integer> myDescendants = tree.getDescendants();
+    	ArrayList<Integer> myPrincipalVars = new ArrayList();
+   
+    	boolean isPrincipal = false;
+    	for (int myVar : myVars) {
+    		isPrincipal = false;
+    		for (int descendantAgent : myDescendants) {
+    			List<Integer> descendantVars = getProblem().getVariables(descendantAgent);
+    			for (int descendant : descendantVars) {
+    				if (getProblem().isVarConstrained(myVar, descendant)) {
+    					isPrincipal = true;
+    					myPrincipalVars.add(myVar);
+    					break;
+    				}
+    			}
+    			if (isPrincipal) {
+    				break;
+    			}
+    		}
+    	}
+    	return myPrincipalVars;
+    }
     public void InitSelf(){
+    	// Set my principle variables
+    	getProblem().setWeakPrincipalVariables(getId(), identifyPrincipalVars());
+    	getProblem().setAgentInitialized(getId());
         int min = Integer.MAX_VALUE;
         for(int value = 0; value < getAgentDomainSize(); value ++){
             if(min > calcDelta(value) + sumlbORub(lbChildD, value)){
@@ -288,10 +315,11 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
         		ACEnforcementNeed = true;
         	}
     	}
-    	
+   
+        int currentVal = getProblem().getWeakPrincipalVarsHashValue(getId(), d);    	
         for(int child : tree.getChildren()){
             if(PlusOn) {
-                if(!lastSentVALUEs.containsKey(child) || lastSentVALUEs.get(child) != d
+                if(!lastSentPrinHashVALUEs.containsKey(child) || lastSentPrinHashVALUEs.get(child) != currentVal
 				|| (receivedThReqs.containsKey(child) &&  receivedThReqs.get(child))){
                 	
                     send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
@@ -307,7 +335,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
                     }
                     
                 }
-                lastSentVALUEs.put(child, d);
+                lastSentPrinHashVALUEs.put(child, currentVal);
             }
             else {
                 send("VALUE", getId(), d, ID, min(TH, UB) - calcDelta(d) - sumlbORub(lbChildD, d)
@@ -327,7 +355,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
     	
         for(int pseudoChild : tree.getPsaudoChildren()){
             if(PlusOn){
-            	if(!lastSentVALUEs.containsKey(pseudoChild) || lastSentVALUEs.get(pseudoChild) != d
+            	if(!lastSentPrinHashVALUEs.containsKey(pseudoChild) || lastSentPrinHashVALUEs.get(pseudoChild) != currentVal
 				|| (receivedThReqs.containsKey(pseudoChild) &&  receivedThReqs.get(pseudoChild))){
                     send("VALUE", getId(), d, ID, Integer.MAX_VALUE,
                             myACConstruct.global_cPhi, myACConstruct.global_top).to(pseudoChild);
@@ -340,7 +368,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
                     			" [" + d + "] to " + pseudoChild);
                     }
                 }
-                lastSentVALUEs.put(pseudoChild, d);
+            	lastSentPrinHashVALUEs.put(pseudoChild, currentVal);
             }
             else{
                 send("VALUE", getId(), d, ID, Integer.MAX_VALUE,
@@ -455,7 +483,14 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
         if(_cpa.containsKey(p) && IDp > _cpa.get(p).getID()){
             // BnB-ADOPT+ only
             if(PlusOn){
-                if(_cpa.get(p).getValue() != dp){
+            	int prinHashVal_dp = dp;
+            	int prinHashVal_cpa = _cpa.get(p).getValue();
+            	if(getProblem().hasAgentInitialized(p)) {
+                	prinHashVal_dp = getProblem().getWeakPrincipalVarsHashValue(p, dp);
+                	prinHashVal_cpa = getProblem().getWeakPrincipalVarsHashValue(p, _cpa.get(p).getValue());
+            	}
+
+                if(prinHashVal_dp != prinHashVal_cpa){
                     this.cpaChanged = true;
                 }
             }
@@ -471,9 +506,20 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
             _cpa.get(entry.getKey()).getID()){
                 // BnB-ADOPT+ only
                 if(PlusOn){
-                    if(_cpa.get(entry.getKey()).getValue() != entry.getValue().getValue()){
+                	int hisAgentID = entry.getKey();
+                	int prinHashVal_received = entry.getValue().getValue();
+                	int prinHashVal_old = _cpa.get(entry.getKey()).getValue();
+                	if(getProblem().hasAgentInitialized(hisAgentID)) {
+                    	prinHashVal_received = getProblem().
+                    			getWeakPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
+                    	prinHashVal_old = getProblem().
+                    			getWeakPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
+                	}
+
+                    if(prinHashVal_received != prinHashVal_old){
                         this.cpaChanged = true;
                     }
+
                 }
                 _cpa.remove(entry.getKey());
                 _cpa.put(entry.getKey(), new AssignmentInfo(entry.getValue().getValue(),
@@ -481,13 +527,26 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
             }
         }
     }
-
-    public boolean isCompatible(HashMap<Integer, AssignmentInfo> cpa1, HashMap<Integer, 
+    
+    public boolean isCompatible(HashMap<Integer, AssignmentInfo> cpa1, HashMap<Integer,
     		AssignmentInfo> _cpa){
         for(Map.Entry<Integer, AssignmentInfo> entry : cpa1.entrySet()){
-            if(_cpa.containsKey(entry.getKey()) && entry.getValue().getValue() != 
-            		_cpa.get(entry.getKey()).getValue()){
-                return false;
+        	int hisAgentID = entry.getKey();
+        	int prinHashVal_received = entry.getValue().getValue();
+        	if(getProblem().hasAgentInitialized(hisAgentID)) {
+        		prinHashVal_received = getProblem().
+            			getWeakPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
+        	}
+            if(_cpa.containsKey(entry.getKey())){
+            	int prinHashVal_old = _cpa.get(entry.getKey()).getValue();
+            	if(getProblem().hasAgentInitialized(hisAgentID)) {
+            		prinHashVal_old = getProblem().
+                			getWeakPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
+            	}
+            	
+            	if (prinHashVal_received != prinHashVal_old) {
+            		return false;
+            	}
             }
         }
         return true;
@@ -568,10 +627,24 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
             }
         }
         if(isCompatible(cCPA, cpa)){
-            lbChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()] = 
-            		max(lbChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()], LBc);
-            ubChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()] =
-            		min(ubChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()], UBc);
+        	// Not only update the bounds with the same value of in the received cost message
+        	// But also update all the ones with the same values for pinciple variables
+        	int d_received = cCPA.get(getId()).getValue();
+        	int prinHashVal_received = getProblem().
+        			getWeakPrincipalVarsHashValue(getId(), d_received);
+        	for(int my_d = 0; my_d < getAgentDomainSize(); my_d++) {
+        		int myPrinHash_d = getProblem().getWeakPrincipalVarsHashValue(getId(), my_d);
+        		if (myPrinHash_d == prinHashVal_received) {
+                    lbChildD[tree.getChildren().indexOf(c)][my_d] = 
+                    		max(lbChildD[tree.getChildren().indexOf(c)][my_d], LBc);
+                    ubChildD[tree.getChildren().indexOf(c)][my_d] = 
+                    		min(ubChildD[tree.getChildren().indexOf(c)][my_d], UBc);
+        		}
+        	}
+//            lbChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()] = 
+//            		max(lbChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()], LBc);
+//            ubChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()] =
+//            		min(ubChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()], UBc);
         }
         if(!isCompatible(_cpa, cpa))
             InitSelf();
@@ -740,13 +813,10 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
     			valuesToDelete.add(myVal);
     			myACConstruct.pruned[myVal] = true;
     			// SuWen Debug
-    			if(debug){
-        			System.out.println("Current my top:" + myACConstruct.global_top +
-        					"\tCurrent my cPhi:"+cPhi + "\tUnaryCost of var["+
-        					myVal + "]:"+cSelf);
-        			System.out.println("["+ myVal + "] pruned from variable " + getId());
-    			}
-
+    			System.out.println("Current my top:" + myACConstruct.global_top +
+    					"\tCurrent my cPhi:"+cPhi + "\tUnaryCost of var["+
+    					myVal + "]:"+cSelf);
+    			System.out.println("["+ myVal + "] pruned from variable " + getId());
     			
     			myACConstruct.unaryCosts[myVal] = Double.MAX_VALUE;
     		}
@@ -773,7 +843,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
                 	Counter.DELMsgCounter ++;
                 //Debug
                 if(debug){
-                	System.out.println("DEL");
+                	System.out.println("DEL: " + getId() +" to " + neighbor);
                 }
                 
                 neighborIndex = myACConstruct.getNeighborIndex(neighbor);
@@ -787,7 +857,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
                 	Counter.DELMsgCounter ++;
                 //Debug
                 if(debug){
-                	System.out.println("DEL");
+                	System.out.println("DEL: " + getId() +" to " + parent);
                 }
                 
                 neighborIndex = myACConstruct.getNeighborIndex(parent);
@@ -801,7 +871,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
                 	Counter.DELMsgCounter ++;
                 //Debug
                 if(debug){
-                	System.out.println("DEL");
+                	System.out.println("DEL: " + getId() +" to " + neighbor);
                 }
                 
                 neighborIndex = myACConstruct.getNeighborIndex(neighbor);
@@ -814,7 +884,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
                 	Counter.DELMsgCounter ++;
                 //Debug
                 if(debug){
-                	System.out.println("DEL");
+                	System.out.println("DEL: " + getId() +" to " + neighbor);
                 }
                 
                 neighborIndex = myACConstruct.getNeighborIndex(neighbor);
@@ -920,10 +990,7 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
 					myACConstruct.P_records[neighborIndex][i] = ACCounter;
 //					myACConstruct.P_records[neighborIndex][i] = new Double[getProblem().getDomainSize(neighbor)];
 				}
-				if(debug){
-					System.out.println("k:" + myACConstruct.P_records[neighborIndex][i].length);
-				}
-				
+				System.out.println("k:" + myACConstruct.P_records[neighborIndex][i].length);
     			double alpha = myACConstruct.P_records[neighborIndex][i][hisVal];
     			myACConstruct.updateCostsWhenRollBack(getId(), neighbor, hisVal, alpha);
     		}
@@ -931,3 +998,4 @@ public class AC_BnBAdoptPlusAgent extends SimpleAgent {
     	return true;
     }
 }
+

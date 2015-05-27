@@ -1,6 +1,6 @@
 <experiment>
 <!--	for VA, PC approaches inputfile: should be original problem file that have pseudoAgents-->
-    <async-test name="VA" run-var="fileNo" repeat-count="1" start="1" end="550" tick-size="1">!
+    <!--async-test name="VA" run-var="fileNo" repeat-count="1" start="1" end="550" tick-size="1">!
         <VA_ProbGen/>
         <algorithm name="BnBAdoptPlusAgent"/>
         <allMsgs agentType="VA"/>
@@ -10,7 +10,7 @@
  		<TERMINATEMessageCounter agentType="VA"/>
  		<default-message-delayer type="NCCC" maximum-delay="1000000000" minimum-delay="0"/>
  		<NCCC_VA/>				
-    </async-test>    
+    </async-test-->    
     <!--async-test name="VA/Hybrid/PC-BnBAdopt" run-var="fileNo" repeat-count="1" start="2" end="551" tick-size="1">!
         <VA_ProbGen/>
         <algorithm name="BnBAdoptPlusAgent"/>
@@ -73,14 +73,14 @@
  		<TERMINATEMessageCounter agentType="VA"/>
  		<NCCC_VA/>				
     </async-test--> 
-  <!--async-test name="AC_PreCompilation" run-var="fileNo" repeat-count="1" start="1" end="28" tick-size="1">!
+  <async-test name="AC_PreCompilation" run-var="fileNo" repeat-count="1" start="1" end="28" tick-size="1">!
         <OCProbGen/>
-        <algorithm name="AC_BnBAdoptPlusAgent_OC_StrongPrincipal"/>
+        <algorithm name="ForgetfulBnBAdoptPlusAgent_StrongPrinciple"/>
         <allMsgs agentType="VA"/>
         <VALUEMessageCounter agentType="VA"/>
  		<COSTMessageCounter agentType="VA"/>
  		<DELMessageCounter agentType="VA"/>
  		<TERMINATEMessageCounter agentType="VA"/>
  		<NCCC_VA/>				
-    </async-test-->    
+    </async-test>    
 </experiment>

@@ -19,7 +19,7 @@ import bgu.dcr.az.api.ds.ImmutableSet;
 import bgu.dcr.az.api.prob.ImmutableProblem;
 import bgu.dcr.az.api.prob.Problem;
 import bgu.dcr.az.api.tools.DFSPsaudoTree;
-import bgu.dcr.az.dev.agents.AC_BnBAdoptPlusAgent;
+import bgu.dcr.az.dev.softAC.AC_BnBAdoptPlusAgent;
 
 public class ACConstruct_AFB {
 	

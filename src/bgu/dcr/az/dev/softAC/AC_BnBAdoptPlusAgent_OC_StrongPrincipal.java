@@ -1,16 +1,10 @@
 /**
- * AC_BnBAdoptPlusAgent_OC_Principal.java
+ * AC_BnBAdoptPlusAgent_OC_StrongPrincipal.java
    Created by Su Wen
-   Date: Mar 28, 2015
-   Time: 10:18:58 PM 
+   Date: Mar 31, 2015
+   Time: 8:29:53 PM 
  */
-/**
- * AC_BnBAdoptAgent.java
-   Created by Su Wen
-   Date: Dec 20, 2014
-   Time: 4:27:19 PM 
- */
-package bgu.dcr.az.dev.agents;
+package bgu.dcr.az.dev.softAC;
 
 import bgu.dcr.az.api.Continuation;
 import bgu.dcr.az.api.agt.SimpleAgent;
@@ -28,8 +22,8 @@ import java.util.*;
 import confs.Counter;
 import confs.defs;
 
-@Algorithm(name="AC_BnBAdoptPlusAgent_OC_Principal", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
-public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
+@Algorithm(name="AC_BnBAdoptPlusAgent_OC_StrongPrincipal", useIdleDetector=true)   // Corresponds to the algorithm name in the .xml file
+public class AC_BnBAdoptPlusAgent_OC_StrongPrincipal extends SimpleAgent {
 
 	boolean debug = false;
 	boolean TERMINATE_CONTROL = true;
@@ -158,8 +152,44 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
         lbChildD[child][val] = 0;       //should have been heuristic
         ubChildD[child][val] = Integer.MAX_VALUE;
     }
+    private HashMap<Integer, ArrayList<Integer>> identifyPrincipalVars () {
+    	HashMap<Integer, ArrayList<Integer>> childPrincipalVarsmap = new HashMap();
+    	List<Integer> myVars = getProblem().getVariables(getId());
+    	List<Integer> agentsInSubtree = new ArrayList();
+    	
+    	boolean isPrincipal = false;
+    	
+    	for(int child : tree.getChildren()) { //for each subtree rooted at a child
+    		ArrayList<Integer> myPrincipalVars = new ArrayList();
+    		agentsInSubtree.clear();
+    		agentsInSubtree.add(child);
+    		for(int descendant : tree.getChildDescendants(child)) {
+    			agentsInSubtree.add(descendant);
+    		}
 
-    private ArrayList<Integer> identifyPrincipalVars () {
+        	for (int myVar : myVars) {
+        		isPrincipal = false;     		
+        		for (int descendantAgent : agentsInSubtree) {
+        			List<Integer> descendantVars = getProblem().getVariables(descendantAgent);
+        			for (int descendant : descendantVars) {
+        				if (getProblem().isVarConstrained(myVar, descendant)) {
+        					isPrincipal = true;
+        					myPrincipalVars.add(myVar);
+        					break;
+        				}
+        			}
+        			if (isPrincipal) {
+        				break;
+        			}
+        		}
+        	}
+        	childPrincipalVarsmap.put(child, myPrincipalVars);
+    	}
+   
+    	return childPrincipalVarsmap;
+    }
+    
+    private ArrayList<Integer> identifyWeakPrincipalVars () {
     	List<Integer> myVars = getProblem().getVariables(getId());
     	List<Integer> myDescendants = tree.getDescendants();
     	ArrayList<Integer> myPrincipalVars = new ArrayList();
@@ -185,8 +215,17 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
     }
     public void InitSelf(){
     	// Set my principle variables
-    	getProblem().setWeakPrincipalVariables(getId(), identifyPrincipalVars());
+    	getProblem().setStrongPrincipalVariables(getId(), identifyPrincipalVars());
+    	getProblem().setWeakPrincipalVariables(getId(), identifyWeakPrincipalVars());
+    	getProblem().setChildren(getId(), tree.getChildren());
+    	HashMap<Integer, List<Integer>> childDescendants = new HashMap();
+    	for(int child : tree.getChildren()) {
+    		childDescendants.put(child, tree.getChildDescendants(child));  		
+    	}
+    	getProblem().setChildDescendMap(getId(), childDescendants);
+    	
     	getProblem().setAgentInitialized(getId());
+    	
         int min = Integer.MAX_VALUE;
         for(int value = 0; value < getAgentDomainSize(); value ++){
             if(min > calcDelta(value) + sumlbORub(lbChildD, value)){
@@ -319,6 +358,10 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
         int currentVal = getProblem().getWeakPrincipalVarsHashValue(getId(), d);    	
         for(int child : tree.getChildren()){
             if(PlusOn) {
+            	if(getProblem().hasAllInitialized()) {
+            		currentVal = getProblem().getStrongPrincipalVarsHashValue(getId(), child, d);
+            	}
+            	
                 if(!lastSentPrinHashVALUEs.containsKey(child) || lastSentPrinHashVALUEs.get(child) != currentVal
 				|| (receivedThReqs.containsKey(child) &&  receivedThReqs.get(child))){
                 	
@@ -355,6 +398,17 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
     	
         for(int pseudoChild : tree.getPsaudoChildren()){
             if(PlusOn){
+            	int myRoot = -1;
+            	if(getProblem().hasAllInitialized()) {        		
+                	for(int child : tree.getChildren()) {
+                		if(tree.getChildDescendants(child).contains(pseudoChild)) {
+                			myRoot = child;
+                			break;
+                		}
+                	}
+                	currentVal = getProblem().getStrongPrincipalVarsHashValue(getId(), myRoot, d);
+            	}
+            	
             	if(!lastSentPrinHashVALUEs.containsKey(pseudoChild) || lastSentPrinHashVALUEs.get(pseudoChild) != currentVal
 				|| (receivedThReqs.containsKey(pseudoChild) &&  receivedThReqs.get(pseudoChild))){
                     send("VALUE", getId(), d, ID, Integer.MAX_VALUE,
@@ -485,10 +539,10 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
             if(PlusOn){
             	int prinHashVal_dp = dp;
             	int prinHashVal_cpa = _cpa.get(p).getValue();
-            	if(getProblem().hasAgentInitialized(p)) {
-                	prinHashVal_dp = getProblem().getWeakPrincipalVarsHashValue(p, dp);
-                	prinHashVal_cpa = getProblem().getWeakPrincipalVarsHashValue(p, _cpa.get(p).getValue());
-            	}
+//            	if(getProblem().hasAgentInitialized(p)) {
+//                	prinHashVal_dp = getProblem().getWeakPrincipalVarsHashValue(p, dp);
+//                	prinHashVal_cpa = getProblem().getWeakPrincipalVarsHashValue(p, _cpa.get(p).getValue());
+//            	}
 
                 if(prinHashVal_dp != prinHashVal_cpa){
                     this.cpaChanged = true;
@@ -509,12 +563,12 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
                 	int hisAgentID = entry.getKey();
                 	int prinHashVal_received = entry.getValue().getValue();
                 	int prinHashVal_old = _cpa.get(entry.getKey()).getValue();
-                	if(getProblem().hasAgentInitialized(hisAgentID)) {
-                    	prinHashVal_received = getProblem().
-                    			getWeakPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
-                    	prinHashVal_old = getProblem().
-                    			getWeakPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
-                	}
+//                	if(getProblem().hasAgentInitialized(hisAgentID)) {
+//                    	prinHashVal_received = getProblem().
+//                    			getWeakPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
+//                    	prinHashVal_old = getProblem().
+//                    			getWeakPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
+//                	}
 
                     if(prinHashVal_received != prinHashVal_old){
                         this.cpaChanged = true;
@@ -528,23 +582,80 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
         }
     }
     
-    public boolean isCompatible(HashMap<Integer, AssignmentInfo> cpa1, HashMap<Integer,
-    		AssignmentInfo> _cpa){
-        for(Map.Entry<Integer, AssignmentInfo> entry : cpa1.entrySet()){
-        	int hisAgentID = entry.getKey();
-        	int prinHashVal_received = entry.getValue().getValue();
-        	if(getProblem().hasAgentInitialized(hisAgentID)) {
-        		prinHashVal_received = getProblem().
-            			getWeakPrincipalVarsHashValue(entry.getKey(), entry.getValue().getValue());
+    public boolean isCompatible(HashMap<Integer, AssignmentInfo> myCPA,
+    		HashMap<Integer, AssignmentInfo> newCPA){
+        for(Map.Entry<Integer, AssignmentInfo> entry : myCPA.entrySet()){
+        	
+        	
+        	int prinHashVal_old = entry.getValue().getValue();
+        	int ancestor = entry.getKey();
+        	int rootChild = -1;
+        	if(getProblem().hasAllInitialized()) {
+            	HashMap<Integer, List<Integer>> childDescendMapForAncestor = 
+            			getProblem().getChildDescendMap(ancestor);
+            	for(int childOfAncesotr : getProblem().getChildren(ancestor)){
+            		if(getId() == childOfAncesotr) {
+            			rootChild = childOfAncesotr;
+            			break;
+            		}
+            		if(childDescendMapForAncestor.get(childOfAncesotr).contains(getId())) {
+            			rootChild = childOfAncesotr;
+            			break;
+            		}
+            	}
+            	prinHashVal_old = getProblem().
+            			getStrongPrincipalVarsHashValue(ancestor, rootChild, entry.getValue().getValue());
         	}
-            if(_cpa.containsKey(entry.getKey())){
-            	int prinHashVal_old = _cpa.get(entry.getKey()).getValue();
-            	if(getProblem().hasAgentInitialized(hisAgentID)) {
-            		prinHashVal_old = getProblem().
-                			getWeakPrincipalVarsHashValue(entry.getKey(), _cpa.get(entry.getKey()).getValue());
+
+            if(newCPA.containsKey(entry.getKey())){
+            	int prinHashVal_new = newCPA.get(entry.getKey()).getValue();
+            	if(getProblem().hasAllInitialized()) {
+            		prinHashVal_new = getProblem().
+                			getStrongPrincipalVarsHashValue(ancestor, rootChild, 
+                					newCPA.get(ancestor).getValue());
             	}
             	
-            	if (prinHashVal_received != prinHashVal_old) {
+            	if (prinHashVal_new != prinHashVal_old) {
+            		return false;
+            	}
+            }
+        }
+        return true;
+    }
+    
+    public boolean isCompatible(HashMap<Integer, AssignmentInfo> receivedCPA,
+    		HashMap<Integer, AssignmentInfo> myNewCPA, int child){
+        for(Map.Entry<Integer, AssignmentInfo> entry : myNewCPA.entrySet()){
+        	
+        	
+        	int prinHashVal_myNew = entry.getValue().getValue();
+        	int ancestor = entry.getKey();
+        	int rootChild = -1;
+        	if(getProblem().hasAllInitialized()) {
+            	HashMap<Integer, List<Integer>> childDescendMapForAncestor = 
+            			getProblem().getChildDescendMap(ancestor);
+            	for(int childOfAncesotr : getProblem().getChildren(ancestor)){
+            		if(getId() == childOfAncesotr) {
+            			rootChild = childOfAncesotr;
+            		}
+            		if(childDescendMapForAncestor.get(childOfAncesotr).contains(getId())) {
+            			rootChild = childOfAncesotr;
+            			break;
+            		}
+            	}
+            	prinHashVal_myNew = getProblem().
+            			getStrongPrincipalVarsHashValue(ancestor, rootChild, entry.getValue().getValue());
+        	}
+
+            if(receivedCPA.containsKey(entry.getKey())){
+            	int prinHashVal_received = receivedCPA.get(entry.getKey()).getValue();
+            	if(getProblem().hasAllInitialized()) {
+            		prinHashVal_received = getProblem().
+                			getStrongPrincipalVarsHashValue(ancestor, rootChild, 
+                					receivedCPA.get(ancestor).getValue());
+            	}
+            	
+            	if (prinHashVal_received != prinHashVal_myNew) {
             		return false;
             	}
             }
@@ -626,25 +737,27 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
                 }
             }
         }
-        if(isCompatible(cCPA, cpa)){
+        if(isCompatible(cCPA, cpa, c)){
         	// Not only update the bounds with the same value of in the received cost message
         	// But also update all the ones with the same values for pinciple variables
-        	int d_received = cCPA.get(getId()).getValue();
-        	int prinHashVal_received = getProblem().
-        			getWeakPrincipalVarsHashValue(getId(), d_received);
-        	for(int my_d = 0; my_d < getAgentDomainSize(); my_d++) {
-        		int myPrinHash_d = getProblem().getWeakPrincipalVarsHashValue(getId(), my_d);
-        		if (myPrinHash_d == prinHashVal_received) {
-                    lbChildD[tree.getChildren().indexOf(c)][my_d] = 
-                    		max(lbChildD[tree.getChildren().indexOf(c)][my_d], LBc);
-                    ubChildD[tree.getChildren().indexOf(c)][my_d] = 
-                    		min(ubChildD[tree.getChildren().indexOf(c)][my_d], UBc);
-        		}
+        	if(getProblem().hasAllInitialized()){
+            	int d_received = cCPA.get(getId()).getValue();
+            	int prinHashVal_received = getProblem().
+            			getStrongPrincipalVarsHashValue(getId(), c, d_received);
+            	for(int my_d = 0; my_d < getAgentDomainSize(); my_d++) {
+            		int myPrinHash_d = getProblem().getStrongPrincipalVarsHashValue(getId(), c, my_d);
+            		if (myPrinHash_d == prinHashVal_received) {
+                        lbChildD[tree.getChildren().indexOf(c)][my_d] = 
+                        		max(lbChildD[tree.getChildren().indexOf(c)][my_d], LBc);
+                        ubChildD[tree.getChildren().indexOf(c)][my_d] = 
+                        		min(ubChildD[tree.getChildren().indexOf(c)][my_d], UBc);
+            		}
+            	}
         	}
-//            lbChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()] = 
-//            		max(lbChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()], LBc);
-//            ubChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()] =
-//            		min(ubChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()], UBc);
+        	else{
+                lbChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()] = max(lbChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()], LBc);
+                ubChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()] = min(ubChildD[tree.getChildren().indexOf(c)][cCPA.get(getId()).getValue()], UBc);
+        	}
         }
         if(!isCompatible(_cpa, cpa))
             InitSelf();
@@ -771,6 +884,7 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
     	double alpha = Double.MAX_VALUE;
     	double cost = 0;  	
     	if(ProjectToMe == projectDirection){
+//    		for(int myVal : this.getAgentDomain()){
     		for(int myVal = 0; myVal < this.getAgentDomainSize(); myVal++){
     			alpha = myACConstruct.checkAlphaProjectToMe(getId(), myVal, neighbor);
     			if(0 < alpha){
@@ -781,6 +895,7 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
 
     	}
     	if(ProjectFromMe == projectDirection){
+//    		for(int hisVal : this.getAgentDomainOf(neighbor)){
     		for(int hisVal = 0; hisVal < this.getAgentDomainSize(neighbor); hisVal++){
     			alpha = myACConstruct.checkAlphaProjectToNeighbor(getId(), neighbor, 
     					hisVal);
@@ -807,16 +922,20 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
     void checkDomainForDeletions(){
     	Vector<Integer> valuesToDelete = new Vector();
     	double cPhi =  myACConstruct.global_cPhi;
+//    	for(int myVal : this.getAgentDomain()){
     	for(int myVal = 0; myVal < this.getAgentDomainSize(); myVal++){
     		double cSelf = myACConstruct.unaryCosts[myVal];
     		if(cSelf + cPhi > myACConstruct.global_top && !myACConstruct.pruned[myVal]){
     			valuesToDelete.add(myVal);
     			myACConstruct.pruned[myVal] = true;
     			// SuWen Debug
-    			System.out.println("Current my top:" + myACConstruct.global_top +
-    					"\tCurrent my cPhi:"+cPhi + "\tUnaryCost of var["+
-    					myVal + "]:"+cSelf);
-    			System.out.println("["+ myVal + "] pruned from variable " + getId());
+    			if(debug){
+        			System.out.println("Current my top:" + myACConstruct.global_top +
+        					"\tCurrent my cPhi:"+cPhi + "\tUnaryCost of var["+
+        					myVal + "]:"+cSelf);
+        			System.out.println("["+ myVal + "] pruned from variable " + getId());
+    			}
+
     			
     			myACConstruct.unaryCosts[myVal] = Double.MAX_VALUE;
     		}
@@ -990,7 +1109,10 @@ public class AC_BnBAdoptPlusAgent_OC_Principal extends SimpleAgent {
 					myACConstruct.P_records[neighborIndex][i] = ACCounter;
 //					myACConstruct.P_records[neighborIndex][i] = new Double[getProblem().getDomainSize(neighbor)];
 				}
-				System.out.println("k:" + myACConstruct.P_records[neighborIndex][i].length);
+				if(debug){
+					System.out.println("k:" + myACConstruct.P_records[neighborIndex][i].length);
+				}
+				
     			double alpha = myACConstruct.P_records[neighborIndex][i][hisVal];
     			myACConstruct.updateCostsWhenRollBack(getId(), neighbor, hisVal, alpha);
     		}

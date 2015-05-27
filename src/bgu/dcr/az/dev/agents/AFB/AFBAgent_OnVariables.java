@@ -1,4 +1,4 @@
-package bgu.dcr.az.dev.agents;
+package bgu.dcr.az.dev.agents.AFB;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -9,8 +9,8 @@ import bgu.dcr.az.api.agt.*;
 import bgu.dcr.az.api.ano.*;
 import bgu.dcr.az.api.tools.*;
 
-@Algorithm(name = "AFB", useIdleDetector=false)
-public class AFBAgent extends SimpleAgent {
+@Algorithm(name="AFBOnVariables", useIdleDetector=false)
+public class AFBAgent_OnVariables extends SimpleAgent {
 
 	private int bound;
 	private Assignment cpa, bestCpa;
@@ -22,7 +22,7 @@ public class AFBAgent extends SimpleAgent {
     public void start() {
     	timeStamp = new TimeStamp(this);
     	bound = Integer.MAX_VALUE;
-    	estimates = new int[this.getProblem().getNumberOfAgents()];
+    	estimates = new int[this.getProblem().getNumberOfVars()];
     	h = new int[this.getProblem().getAgentDomainSize(this.getId())];
     	fillH();
         if (isFirstAgent()) {
@@ -36,7 +36,7 @@ public class AFBAgent extends SimpleAgent {
     	int v = -1;
     	int lastAssignedValue = (cpa.isAssigned(this.getId()) ? cpa.getAssignment(this.getId()) : -1);
     	cpa.unassign(this.getId());
-    	for (int i = lastAssignedValue + 1; i < getAgentDomainSize(); i++) {
+    	for (int i = lastAssignedValue + 1; i < this.getAgentDomainSize(); i++) {
     		if (costOf(cpa) + calcFv(i, cpa) < bound) {
                 v = i;
                 break;
@@ -49,7 +49,7 @@ public class AFBAgent extends SimpleAgent {
             timeStamp.incLocalTime();
             if (cpa.isFull(getProblem())) {
                 broadcast("NEW_SOLUTION", cpa);
-                bound = costOf(cpa);
+                bound = (int) costOf(cpa);
                 assignCPA();
             } else {
                 send("CPA_MSG", cpa).toNextAgent();
@@ -62,7 +62,6 @@ public class AFBAgent extends SimpleAgent {
         clearEstimations();
         if (this.isFirstAgent()) {
              finish(bestCpa);
-             finish();
              System.out.println("bound is: " + bound);
              File file = new File("statistics.txt");
              try {
@@ -73,66 +72,91 @@ public class AFBAgent extends SimpleAgent {
                  e.printStackTrace();
              }
         } else {
-             cpa.unassign(getId());
+             cpa.unassign(this.getId());
              send("CPA_MSG", cpa).toPreviousAgent();
         }
 
     }
     
     private void clearEstimations() {
-        this.estimates = new int[getProblem().getNumberOfAgents()];
+        this.estimates = new int[this.getProblem().getNumberOfVars()];
     }
     
     private int calcFv(int v, Assignment pa) {
-        return pa.calcAddedCost(getId(), v, getProblem()) + h[v];
+        int ans = (int) (pa.calcAddedCost(this.getId(), v, this.getProblem()) + h[v]);
+        return ans;
     }
     
     private void fillH() {
-        for (int v = 0; v < getProblem().getAgentDomainSize(this.getId()); v++) {
+        for (int v = 0; v < this.getProblem().getAgentDomainSize(this.getId()); v++) {
             h[v] = calculateHv(v);
         }
     }
     
     private int calculateHv(int v) {
         int ans = 0;
-        for (int aj = getId() + 1; aj < this.getProblem().getNumberOfAgents(); aj++) {
-            int tmp = Integer.MAX_VALUE;
-            for (int u = 0; u < getProblem().getAgentDomainSize(aj); u++) {
-                tmp = min(tmp, getAgentConstraintCost(this.getId(), v, aj, u));
+        int cost = 0;
+        int tmp = 0;
+        for (int aj = this.getId() + 1; aj < this.getProblem().getNumberOfVars(); aj++) {
+            tmp = Integer.MAX_VALUE;
+            cost = 0;
+            for (int u = 0; u < this.getProblem().getAgentDomainSize(aj); u++) {
+                    cost = (int) this.getAgentConstraintCost(this.getId(), v, aj, u);
+                    if (tmp > cost) {
+                            tmp = cost;
+                    }
             }
             ans += tmp;
+        }
+        return ans;
+    }
+
+    private int calcMinf(Assignment pa) {
+        int ans = 0;
+        int tmp = Integer.MAX_VALUE;
+        int fv = 0;
+        for (int v = 0; v < this.getProblem().getAgentDomainSize(this.getId()); v++) {
+                fv = calcFv(v, pa);
+                if (tmp > fv) {
+                        tmp = fv;
+                }
+        }
+        ans = tmp;
+        return ans;
+    }
+    
+    private double estimatesSum() {
+        int ans = 0;
+        for (int i = 0; i > estimates.length; i++) {
+                ans += estimates[i];
         }
         return ans;
     }
     
     @Override
     protected void beforeMessageSending(Message m) {
-        m.getMetadata().put("TIMESTAMP", timeStamp.deepCopy());
+        m.getMetadata().put("TIMESTAMP", timeStamp);
     }
     
     @Override
     protected Message beforeMessageProcessing(Message msg) {
         if (msg.getName().equals(SYS_TERMINATION_MESSAGE)) {
-            return msg;
+                return msg;
         }
 
         TimeStamp hisTimeStamp = (TimeStamp) msg.getMetadata().get("TIMESTAMP");
         if (hisTimeStamp.compare(timeStamp, this) >= 0) {
-            timeStamp.copyFrom(hisTimeStamp);
-
+                timeStamp.copyFrom(hisTimeStamp);
         } else {
-            return null;
+                return null;
         }
-         return super.beforeMessageProcessing(msg);
+        return super.beforeMessageProcessing(msg);
     }
     
     @WhenReceived("FB_CPA")
     public void handleFBCPA(int aj, Assignment pa) {
-        int minf = Integer.MAX_VALUE;
-        for (int v = 0; v < this.getProblem().getAgentDomainSize(this.getId()); v++) {
-            minf = min(minf, calcFv(v, pa));
-        }
-        send("FB_ESTIMATE", minf, getId()).to(aj);
+        int f = calcMinf(pa);
+        send("FB_ESTIMATE", f, pa, this.getId()).to(aj);
     }
     
     @WhenReceived("CPA_MSG")
@@ -141,27 +165,23 @@ public class AFBAgent extends SimpleAgent {
         Assignment tempCpa = pa.deepCopy();
         tempCpa.unassign(this.getId());
         if (costOf(tempCpa) >= bound) {
-            backtrack();
+                backtrack();
         } else {
-            assignCPA();
+                assignCPA();
         }
     }
     
     @WhenReceived("FB_ESTIMATE")
-    public void handleFBESTIMATE(int estimate, int aj) {
+    public void handleFBESTIMATE(int estimate, Assignment pa, int aj) {
         estimates[aj] = estimate;
-        int estimatesSum = 0;
-        for (int i = 0; i < estimates.length; i++) {
-            estimatesSum += estimates[i];
-        }
-        if (costOf(cpa) + estimatesSum >= bound) {
-            assignCPA();
+        if (costOf(cpa) + estimatesSum() >= bound) {
+                assignCPA();
         } 
     }
     
     @WhenReceived("NEW_SOLUTION")
     public void handleNEWSOLUTION(Assignment pa) {
         bestCpa = pa;
-        bound = costOf(pa);
+        bound = (int) costOf(pa);
     }
 }
